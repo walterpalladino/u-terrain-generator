@@ -933,7 +933,7 @@ MonoBehaviour:
   cliffs:
     enabled: 1
     textureIndex: 5
-    minAngle: 45
+    minAngle: 40
     overlap: 0.25
   filterQty: 0
   filterWeight: 0.1

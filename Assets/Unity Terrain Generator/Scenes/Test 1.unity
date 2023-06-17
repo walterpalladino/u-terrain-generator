@@ -123,6 +123,129 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &469629842
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 469629844}
+  - component: {fileID: 469629843}
+  - component: {fileID: 469629845}
+  m_Layer: 0
+  m_Name: Generators
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &469629843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469629842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2e5d392bfb1c424c912102c8af3f3d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  treesData:
+    enabled: 1
+    prefabsIds: 0000000001000000020000000300000004000000
+    presence: 0.1
+    groupSize: 5
+    groupRadius: 5
+    freeRadius: 2
+    maxSlope: 20
+    minAltitude: -0.1
+    maxAltitude: 100
+    maxQuantity: 10000
+    sizeVariation: 0
+  bushesData:
+    enabled: 0
+    prefabsIds: 
+    presence: 0.5
+    groupSize: 1
+    groupRadius: 1
+    freeRadius: 0.5
+    maxSlope: 20
+    minAltitude: 0
+    maxAltitude: 100
+    maxQuantity: 1000
+    sizeVariation: 0
+  grassData:
+    enabled: 1
+    prefabsIds: 
+    presence: 0.5
+    groupSize: 1
+    groupRadius: 1
+    freeRadius: 0.5
+    maxSlope: 20
+    minAltitude: 0
+    maxAltitude: 100
+    maxQuantity: 1000
+    sizeVariation: 0
+  rocksData:
+    enabled: 0
+    prefabsIds: 
+    presence: 0.5
+    groupSize: 1
+    groupRadius: 1
+    freeRadius: 0.5
+    maxSlope: 20
+    minAltitude: 0
+    maxAltitude: 100
+    maxQuantity: 1000
+    sizeVariation: 0
+  randomSeed: 0
+  maxTriesToLocateObjects: 3
+  terrains:
+  - {fileID: 498462304}
+  terrainTileSize: 50
+  terrainMin: {x: 0, y: 0, z: 0}
+  terrainMax: {x: 1000, y: 64, z: 1000}
+  freeBorderSize: 0
+  terrainCenter: {x: 500, y: 32, z: 500}
+  terrainIgnoreLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  maxDistanceFromCenter: 0
+  noiseScale: 1
+  noiseOcatves: 1
+  noisePersistance: 0.5
+  noiseLacunarity: 1
+--- !u!4 &469629844
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469629842}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &469629845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469629842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba48918847b9047b087774f02ddde317, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoUpdate: 0
 --- !u!1 &483338969
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +351,7 @@ GameObject:
   - component: {fileID: 498462305}
   - component: {fileID: 498462304}
   - component: {fileID: 498462303}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -371,8 +494,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1291578572}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0.033753447, y: -0.5122131, z: 0.020121027, w: -0.857959}
+  m_LocalPosition: {x: 186.40625, y: 9.546616, z: 114.829124}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
