@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 using static UnityEditor.Progress;
 
 public enum UTHit
@@ -13,6 +14,7 @@ public enum UTHit
     PLACEHOLDER_HIT
 }
 
+[RequireComponent(typeof(Terrain))]
 public class UTVegetationSpawner : MonoBehaviour, IGenerator
 {
 
@@ -33,122 +35,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     [SerializeField]
     private UTSpawnData rocksData;
 
-    /*
-    [Header("Tree Settings")]
-    [SerializeField]
-    private bool treesEnabled = true;
-    [SerializeField]
-    private GameObject[] trees;
-    [SerializeField]
-    private GameObject treesParent;
-    [SerializeField]
-    [Range(0.0f, 1.0f)]
-    private float treePresence = 0.5f;
-    [SerializeField]
-    [Range(1, 10)]
-    private int treeGroupSize = 1;
-    [SerializeField]
-    [Range(1.0f, 15.0f)]
-    private float treeGroupRadius = 1.0f;
-    [SerializeField]
-    [Range(0.5f, 5.0f)]
-    private float treeFreeRadius = 0.5f;
-    [SerializeField]
-    [Range(0.0f, 90.0f)]
-    private float treeMaxSlope = 20.0f;
-    [SerializeField]
-    private float treeMinAltitude = 0.0f;
-    [SerializeField]
-    private float treeMaxAltitude = 20.0f;
-    */
-    /*
-    [Header("Grass Settings")]
-    [SerializeField]
-    private bool grassEnabled = true;
-    [SerializeField]
-    private GameObject[] grasses;
-//    [SerializeField]
-//    private GameObject grassParent;
-    [SerializeField]
-    [Range(0.0f, 1.0f)]
-    private float grassPresence = 0.5f;
-    [SerializeField]
-    [Range(1, 20)]
-    private int grassGroupSize = 1;
-    [SerializeField]
-    [Range(1.0f, 15.0f)]
-    private float grassGroupRadius = 1.0f;
-    [SerializeField]
-    [Range(0.1f, 5.0f)]
-    private float grassFreeRadius = 0.5f;
-    [SerializeField]
-    [Range(0.0f, 90.0f)]
-    private float grassMaxSlope = 30.0f;
-    [SerializeField]
-    private float grassMinAltitude = 0.0f;
-    [SerializeField]
-    private float grassMaxAltitude = 100.0f;
-    */
-
-    /*
-    [Header("Bushes Settings")]
-    [SerializeField]
-    private bool bushesEnabled = true;
-    [SerializeField]
-    private GameObject[] bushes;
-    [SerializeField]
-    private GameObject bushesParent;
-    [SerializeField]
-    [Range(0.0f, 1.0f)]
-    private float bushesPresence = 0.5f;
-    [SerializeField]
-    [Range(1, 10)]
-    private int bushesGroupSize = 1;
-    [SerializeField]
-    [Range(1.0f, 15.0f)]
-    private float bushesGroupRadius = 1.0f;
-    [SerializeField]
-    [Range(0.5f, 5.0f)]
-    private float bushesFreeRadius = 0.5f;
-    [SerializeField]
-    [Range(0.0f, 90.0f)]
-    private float bushesMaxSlope = 20.0f;
-    [SerializeField]
-    private float bushesMinAltitude = 0.0f;
-    [SerializeField]
-    private float bushesMaxAltitude = 100.0f;
-    */
-
-    /*
-    [Header("Rocks Settings")]
-    [SerializeField]
-    private bool rocksEnabled = true;
-    [SerializeField]
-    private GameObject[] rocks;
-    [SerializeField]
-    private GameObject rocksParent;
-    [SerializeField]
-    [Range(0.0f, 1.0f)]
-    private float rocksPresence = 0.5f;
-    [SerializeField]
-    [Range(1, 10)]
-    private int rocksGroupSize = 1;
-    [SerializeField]
-    [Range(1.0f, 15.0f)]
-    private float rocksGroupRadius = 1.0f;
-    [SerializeField]
-    [Range(0.5f, 5.0f)]
-    private float rocksFreeRadius = 0.5f;
-    [SerializeField]
-    [Range(0.0f, 90.0f)]
-    private float rocksMaxSlope = 20.0f;
-    [SerializeField]
-    private float rocksMinAltitude = 0.0f;
-    [SerializeField]
-    private float rocksMaxAltitude = 100.0f;
-    */
-
-
 
     [Header("Random Settings")]
     [SerializeField]
@@ -159,22 +45,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     private int maxTriesToLocateObjects = 3;
 
 
-    //public PSTerrainGenerator terrainGenerator;
-
-    //private Dictionary<string, GameObject> treesDictionary = new Dictionary<string, GameObject>();
-    //private Dictionary<string, GameObject> rocksDictionary = new Dictionary<string, GameObject>();
-    //private Dictionary<string, GameObject> bushesDictionary = new Dictionary<string, GameObject>();
-    //private Dictionary<string, GameObject> grassDictionary = new Dictionary<string, GameObject>();
-
     private List<UTSpawnObject> treesList = new List<UTSpawnObject>();
     private List<UTSpawnObject> rocksList = new List<UTSpawnObject>();
     private List<UTSpawnObject> bushesList = new List<UTSpawnObject>();
     private List<UTSpawnObject> grassList = new List<UTSpawnObject>();
 
 
-    [Header("Terrain Settings")]
-    [SerializeField]
-    Terrain[] terrains;
+    Terrain terrain;
 
     [SerializeField] float terrainTileSize = 10;
 
@@ -205,15 +82,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     // Start is called before the first frame update
     void Start()
     {
-        //InitData();
-        //CollectObjects();
-    }
-
-    private void InitData()
-    {
-        treesData.spawnDataType = UTSpawnDataType.Tree;
-        treesData.layerName = "Trees";
-
     }
 
     // Update is called once per frame
@@ -222,7 +90,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     }
 
-
+    //
     public void Generate()
     {
 
@@ -241,6 +109,10 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         CollectTerrain();
 
         SpawnObjects();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.ClearProgressBar();
+#endif
     }
 
     public void Clear()
@@ -249,108 +121,40 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         InitData();
         CollectTerrain();
 
-        foreach (Terrain terrain in terrains)
+
+        //  Clear all trees
+        terrain.terrainData.treeInstances = new TreeInstance[0];
+
+        //  Clear all details (grass, etc)
+        // Get all of layer zero.
+        var map = terrain.terrainData.GetDetailLayer(
+            0, 0,
+            terrain.terrainData.detailWidth, terrain.terrainData.detailHeight,
+            0);
+
+        // For each pixel in the detail map...
+        for (var y = 0; y < terrain.terrainData.detailHeight; y++)
         {
-            //            List<TreeInstance> treeInstanceCollection = new List<TreeInstance>(terrain.terrainData.treeInstances);
-            //          foreach(TreeInstance treeInstance in treeInstanceCollection){
-            //        }
-
-            //  Clear all trees
-            terrain.terrainData.treeInstances = new TreeInstance[0];
-
-            //  Clear all details (grass, etc)
-            // Get all of layer zero.
-            var map = terrain.terrainData.GetDetailLayer(
-                0, 0,
-                terrain.terrainData.detailWidth, terrain.terrainData.detailHeight,
-                0);
-
-            // For each pixel in the detail map...
-            for (var y = 0; y < terrain.terrainData.detailHeight; y++)
+            for (var x = 0; x < terrain.terrainData.detailWidth; x++)
             {
-                for (var x = 0; x < terrain.terrainData.detailWidth; x++)
-                {
-                    map[x, y] = 0;
-                }
+                map[x, y] = 0;
             }
-
-            // Assign the modified map back.
-            terrain.terrainData.SetDetailLayer(0, 0, 0, map);
         }
 
-        if (Application.isPlaying)
-        {
-            /*
-            foreach (Transform child in grassParent.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
+        // Assign the modified map back.
+        terrain.terrainData.SetDetailLayer(0, 0, 0, map);
 
-            foreach (Transform child in treesParent.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
-
-            foreach (Transform child in bushesParent.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
-
-            foreach (Transform child in rocksParent.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
-            */
-        }
-        else
-        {
-            /*
-            while (grassParent.transform.childCount != 0)
-            {
-                DestroyImmediate(grassParent.transform.GetChild(0).gameObject);
-            }
-
-            while (treesParent.transform.childCount != 0)
-            {
-                DestroyImmediate(treesParent.transform.GetChild(0).gameObject);
-            }
-
-            while (bushesParent.transform.childCount != 0)
-            {
-                DestroyImmediate(bushesParent.transform.GetChild(0).gameObject);
-            }
-
-            while (rocksParent.transform.childCount != 0)
-            {
-                DestroyImmediate(rocksParent.transform.GetChild(0).gameObject);
-            }
-            */
-        }
     }
 
-    /*
-    private void CollectObjects()
+    private void InitData()
     {
-        
-        foreach (Transform child in treesParent.transform)
-        {
-            treesDictionary.Add(child.gameObject.name, child.gameObject);
-        }
-        foreach (Transform child in rocksParent.transform)
-        {
-            rocksDictionary.Add(child.gameObject.name, child.gameObject);
-        }
-        foreach (Transform child in bushesParent.transform)
-        {
-            bushesDictionary.Add(child.gameObject.name, child.gameObject);
-        }
-        foreach (Transform child in grassParent.transform)
-        {
-            grassDictionary.Add(child.gameObject.name, child.gameObject);
-        }
-        
+        treesData.spawnDataType = UTSpawnDataType.Tree;
+        treesData.layerName = "Trees";
+
+        grassData.spawnDataType = UTSpawnDataType.GrassTexture;
+        grassData.layerName = "Grass";
     }
-    */
+
 
     /*
 
@@ -380,27 +184,18 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     private void CollectTerrain()
     {
 
-        terrains = FindObjectsOfType<Terrain>();
-        Debug.Log("Found : " + terrains.Length + " terrain objects in the scene.");
+        terrain = GetComponent<Terrain>();
 
         Vector3 min = Vector3.positiveInfinity;
         Vector3 max = Vector3.negativeInfinity;
 
-        foreach (Terrain terrain in terrains)
-        {
-            //Debug.Log(terrain.terrainData.size);
-            Vector3 terrainMin = terrain.terrainData.bounds.min;
-            Vector3 terrainMax = terrain.terrainData.bounds.max;
+        //Debug.Log(terrain.terrainData.size);
+        terrainMin = terrain.terrainData.bounds.min;
+        terrainMax = terrain.terrainData.bounds.max;
 
-            terrainMin.y = 0;
-            terrainMax.y = terrain.terrainData.size.y;
+        terrainMin.y = 0;
+        terrainMax.y = terrain.terrainData.size.y;
 
-            min = Vector3.Min(min, terrainMin);
-            max = Vector3.Max(max, terrainMax);
-        }
-
-        this.terrainMin = min;
-        this.terrainMax = max;
 
         //
         float mapSizeX = terrainMax.x - terrainMin.x;
@@ -417,85 +212,25 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     private void SpawnObjects()
     {
 
-        foreach (Terrain terrain in terrains)
-        {
 
-            Vector3 terrainMin = terrain.terrainData.bounds.min;
-            Vector3 terrainMax = terrain.terrainData.bounds.max;
+        Vector3 terrainMin = terrain.terrainData.bounds.min;
+        Vector3 terrainMax = terrain.terrainData.bounds.max;
 
-            terrainMin.y = 0;
-            terrainMax.y = terrain.terrainData.size.y;
+        terrainMin.y = 0;
+        terrainMax.y = terrain.terrainData.size.y;
 
-            Vector3 terrainSize = terrain.terrainData.size;
+        Vector3 terrainSize = terrain.terrainData.size;
 
-            Vector3 terrainCenter = terrainSize / 2.0f;
-            terrainCenter += terrainMin;
+        Vector3 terrainCenter = terrainSize / 2.0f;
+        terrainCenter += terrainMin;
 
-            PlaceTerrainObjects(terrain);
+        PlaceTerrainObjects(terrain);
 
-        }
 
     }
 
 
-    /*
-    private void SpawnObjects()
-    {
-
-        foreach (Terrain terrain in terrains)
-        {
-
-            Vector3 terrainMin = terrain.terrainData.bounds.min;
-            Vector3 terrainMax = terrain.terrainData.bounds.max;
-
-            terrainMin.y = 0;
-            terrainMax.y = terrain.terrainData.size.y;
-
-            Vector3 terrainSize = terrain.terrainData.size;
-
-            Vector3 terrainCenter = terrainSize / 2.0f;
-            terrainCenter += terrainMin;
-
-            int chunksX = (int)(terrainSize.x) / (int)(terrainTileSize);
-            int chunksZ = (int)(terrainSize.z) / (int)(terrainTileSize);
-
-            for (int z = 0; z < chunksZ; z++)
-            {
-                for (int x = 0; x < chunksX; x++)
-                {
-                    PlaceTerrainObjects(terrain, x, z, terrainTileSize);
-                }
-            }
-
-        }
-
-    }
-*/
-
-    /*
-private void SpawnObjects()
-{
-
-    float mapSizeX = terrainMax.x - terrainMin.x;
-    float mapSizeY = terrainMax.y - terrainMin.y;
-    float mapSizeZ = terrainMax.z - terrainMin.z;
-
-    terrainCenter = new Vector3(mapSizeX / 2.0f, mapSizeY / 2.0f, mapSizeZ / 2.0f);
-    terrainCenter += terrainMin;
-
-    int chunksX = (int)(mapSizeX) / (int)(terrainTileSize);
-    int chunksZ = (int)(mapSizeZ) / (int)(terrainTileSize);
-
-    for (int z = 0; z < chunksZ; z++)
-    {
-        for (int x = 0; x < chunksX; x++)
-        {
-            PlaceTerrainObjects(x, z, terrainTileSize);
-        }
-    }
-
-}
-*/
+    
 
     public void PlaceTerrainObjects(Terrain terrain)
     {
@@ -536,33 +271,8 @@ private void SpawnObjects()
     }
 */
 
-    private void InstantiateTreesOnTerrain(Terrain terrain, List<UTSpawnObject> treesList)
-    {
 
-        List<TreeInstance> treeInstanceCollection = new List<TreeInstance>(terrain.terrainData.treeInstances);
-
-        foreach (UTSpawnObject spawnObject in treesList)
-        {
-            TreeInstance treeInstance = new TreeInstance();
-
-            treeInstance.heightScale = 1.0f;
-            treeInstance.widthScale = 1.0f;
-
-            treeInstance.prototypeIndex = spawnObject.prefabIndex;
-            //treeInstance.position = spawnObject.position;
-            treeInstance.position = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y, spawnObject.position.z / terrain.terrainData.size.z);
-            treeInstance.rotation = spawnObject.rotation * Mathf.Deg2Rad;
-
-            treeInstance.color = Color.white;
-            treeInstance.lightmapColor = Color.white;
-
-            treeInstanceCollection.Add(treeInstance);
-        }
-
-        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
-        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
-    }
-
+    //  Trees
     private void GenerateTerrainObjects(Terrain terrain, UTSpawnData objectsData, ref List<UTSpawnObject> instantiatedObjects)
     {
         int count = 0;
@@ -601,12 +311,56 @@ private void SpawnObjects()
 
                 count++;
 
+
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {objectsData.maxQuantity} Created.", (float)count / (float)objectsData.maxQuantity);
+#endif
+
                 if (count >= objectsData.maxQuantity) break;
             }
         }
 
     }
 
+    private void InstantiateTreesOnTerrain(Terrain terrain, List<UTSpawnObject> treesList)
+    {
+
+        List<TreeInstance> treeInstanceCollection = new List<TreeInstance>(terrain.terrainData.treeInstances);
+#if UNITY_EDITOR
+        int count = 0;
+#endif
+        foreach (UTSpawnObject spawnObject in treesList)
+        {
+            TreeInstance treeInstance = new TreeInstance();
+
+            treeInstance.heightScale = 1.0f;
+            treeInstance.widthScale = 1.0f;
+
+            treeInstance.prototypeIndex = spawnObject.prefabIndex;
+            //  Position need to be scaled from 0 to 1 based on the terrain width and height
+            treeInstance.position = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y, spawnObject.position.z / terrain.terrainData.size.z);
+            treeInstance.rotation = spawnObject.rotation * Mathf.Deg2Rad;
+
+            treeInstance.color = Color.white;
+            treeInstance.lightmapColor = Color.white;
+
+            treeInstanceCollection.Add(treeInstance);
+
+#if UNITY_EDITOR
+            count++;
+            UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {treesList.Count} Instantiated.", (float)count / (float)treesList.Count);
+#endif
+
+        }
+
+        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
+        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
+
+        terrain.Flush();
+    }
+
+
+    //  Grass
     private void GenerateGrass(Terrain terrain, UTSpawnData objectsData, ref List<UTSpawnObject> instantiatedObjects)
     {
         int count = 0;

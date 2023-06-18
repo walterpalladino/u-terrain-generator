@@ -38,6 +38,6 @@ public class UTTerrainGeneratorEditor : Editor
             generator.Clear();
         }
 
-
+        //EditorGUILayout.HelpBox("Test", MessageType.Info, false);
     }
 }
