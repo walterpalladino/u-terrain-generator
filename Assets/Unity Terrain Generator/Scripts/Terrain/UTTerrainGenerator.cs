@@ -8,14 +8,15 @@ public enum UTTerrainMask
 {
     None,
     Circular,
-    Square
+    Square,
+    Custom
 }
 
 [System.Serializable]
 public struct UTTerrainLayer
 {
     public int textureIndex;
-    public float startingHeight;
+    //public float startingHeight;
     public float startHeight;
     public float endHeight;
     public float overlap;
@@ -44,20 +45,14 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     private float zOffset;
 
 
-    [SerializeField] Vector3 mapDimensions = new Vector3(500, 128, 500);
+    //[Header("Terrain Settings")]
+    //[SerializeField] Vector3 mapDimensions = new Vector3(500, 128, 500);
 
-    public int mapChunkSize = 512;
+    //public int mapChunkSize = 512;
 
 
+    [Header("Noise Settings")]
     public float noiseScale = 256.0f;
-    //public float heightmapScale = 48.0f;
-
-    //[Range(0.1f, 2.0f)]
-    //public float heightScale = 1.0f;
-    [Range(0.0f, 1.0f)]
-    public float offsetScale = 0.5f;
-
-
 
     [Range(1, 8)]
     public int octaves = 1;
@@ -65,22 +60,20 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     [Range(0.0f, 1.0f)]
     public float persistance;
     public float lacunarity;
-    //[Range(0.10f, 4.0f)]
-    //public float _noiseExponent = 1.0f;
 
     public int seed;
     public Vector2 offset;
 
-    //    public float _meshHeightMultiplier;
-    //    public AnimationCurve _meshHeightCurve;
 
+    [Header("Mask")]
     public UTTerrainMask mapMaskMode = UTTerrainMask.None;
     //[Range(-16f, 16f)]
     public float maskMarginOffset = 0;
 
+    public AnimationCurve terrainCurve = new AnimationCurve();
 
+    [Header("Layers Settings")]
     public UTTerrainLayer[] layers;
-
     public UTTerrainCliff cliffs;
 
 
@@ -147,49 +140,20 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     public void Generate()
     {
         terrain = GetComponent<Terrain>();
-        terrain.terrainData = GenerateTerrain(terrain.terrainData, mapDimensions);
+        terrain.terrainData = GenerateTerrain(terrain.terrainData);
     }
 
-    private TerrainData GenerateTerrain(TerrainData terrainData, Vector3 dimensions)
+    private TerrainData GenerateTerrain(TerrainData terrainData)
     {
-        /*
-        float angle = 30 * Mathf.Deg2Rad;
 
-        xOffset = 2.0f * radius * Mathf.Cos(angle);
-        zOffset = radius + radius * Mathf.Sin(angle);
+        //int heightmapResolution = mapChunkSize + 1;
+        //terrainData.heightmapResolution = heightmapResolution;
+        //terrainData.size = dimensions;
 
-        Debug.Log(Mathf.Sin(angle));
-        Debug.Log(xOffset);
-        Debug.Log(zOffset);
-        */
-
-        int heightmapResolution = mapChunkSize + 1;
-        //        terrainData.heightmapResolution = width + 1;
-        terrainData.heightmapResolution = heightmapResolution;
-        //terrainData.size = new Vector3(heightmapResolution, terrainHeight, heightmapResolution);
-        terrainData.size = dimensions;
-
-        //terrainData.heightmapHeight = _verticalScale;
-
-        //        float[,] noiseMap = NoiseUtils.GenerateNoiseMap(mapChunkSize, mapChunkSize, _seed, noiseScale, octaves, _persistance, _lacunarity, _offset);
-
-        //
-        //        float[,] noiseMap = NoiseUtils.GenerateNoiseMapFixed2(mapChunkSize, mapChunkSize, _seed, noiseScale, octaves, _persistance, _lacunarity, _noiseExponent, _offset);
-        //        float[,] noiseMap = TerrainGeneratorNoiseUtils.GenerateTerracedNoiseMapFixed(mapChunkSize, mapChunkSize, _seed, noiseScale, radius, octaves, _persistance, _lacunarity, _offset, heightScale, offsetScale);
-
-        //////// OK        float[,] noiseMap = TerrainGeneratorNoiseUtils.GenerateTerracedNoiseMapFixed(heightmapResolution, heightmapResolution, _seed, noiseScale, octaves, _persistance, _lacunarity, _offset, heightScale, offsetScale);
-        //        float[,] noiseMap = GenerateNoiseData(mapChunkSize, mapChunkSize, depth, _offset);
-
-        //        float[,] noiseMap = customNoise.GenerateNoiseMap(heightmapResolution, heightmapResolution, _seed, noiseScale, octaves, _persistance, _lacunarity, _offset, heightmapScale, offsetScale);
-
-        //  THIS WORKS
-        //float[,] noiseMap = GenerateNoiseMap(heightmapResolution, heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset, heightmapScale, offsetScale);
-
-        float[,] noiseMap = GenerateHeightMap(heightmapResolution, heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset);
+        float[,] noiseMap = GenerateHeightMap(terrainData.heightmapResolution, terrainData.heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset);
         Debug.Log("Created noiseMap : " + noiseMap.GetLength(0) + " x " + noiseMap.GetLength(1));
 
-
-
+        //  Apply noise reduction if required
         for (int f = 0; f < filterQty; f++)
         {
             noiseMap = FilterNoiseMap(noiseMap, filterWeight);
@@ -200,21 +164,24 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
             noiseMap = GenerateTerraces(noiseMap, terraces);
         }
 
-
+        //  Check for masks
         if (mapMaskMode == UTTerrainMask.Circular)
         {
-            noiseMap = TerrainMaskUtils.ApplyCircularMask(noiseMap, heightmapResolution, maskMarginOffset);
+            noiseMap = TerrainMaskUtils.ApplyCircularMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
         }
         else if (mapMaskMode == UTTerrainMask.Square)
         {
-            noiseMap = TerrainMaskUtils.ApplySquareMask(noiseMap, heightmapResolution, maskMarginOffset);
+            noiseMap = TerrainMaskUtils.ApplySquareMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
         }
-
+        else if (mapMaskMode == UTTerrainMask.Custom)
+        {
+            noiseMap = TerrainMaskUtils.ApplyCustomMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset, terrainCurve);
+        }
 
         //  Array of heightmap samples to set (values range from 0 to 1, array indexed as [y,x]).
         terrainData.SetHeights(0, 0, noiseMap);
-        //terrainData.SetHeights(0, 0, GenerateHeights());
 
+        //  Generate splat maps for textures
         splatmapData = GenerateSplatMap(terrainData);
         terrainData.SetAlphamaps(0, 0, splatmapData);
 
@@ -282,13 +249,13 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 
                 //  Help for Island / Beaches / smooth mountain sides
                 noiseHeight = Mathf.Pow(noiseHeight, softExp);
-
+                
                 //  White noise
                 sampleX = (x + offsetX) / 16;
                 sampleY = (y + offsetY) / 16;
                 perlinNoise = Mathf.PerlinNoise(sampleX, sampleY);
                 noiseHeight += perlinNoise * 0.025f;
-
+                
                 noiseHeight = Mathf.Clamp(noiseHeight, 0.0f, 1.0f);
 
                 noiseMap[x, y] = noiseHeight;// * heightScale;
@@ -304,6 +271,104 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 
         return noiseMap;
     }
+
+
+    
+float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
+    {
+        Debug.Log("mapWidth : " + mapWidth + " mapDepth : " + mapDepth + " seed : " + seed + " scale : " + scale +
+    "ocatces : " + octaves + " persistence : " + persistance + " lacunarity : " + lacunarity + " offset : " + offset);
+
+        System.Random prng = new System.Random(seed);
+
+        float offsetX = offset.x;
+        float offsetY = offset.y;
+
+        offsetX += prng.Next(-100000, 100000);
+        offsetY += prng.Next(-100000, 100000);
+
+
+        // create an empty noise map with the mapDepth and mapWidth coordinates
+        float[,] noiseMap = new float[mapDepth, mapWidth];
+
+
+        if (scale <= 0.0f)
+        {
+            scale = 0.0001f;
+        }
+
+        //  Used once all the values are calculated to normalize the result to be sure we only get a 0-1 values
+        float maxNoiseHeight = float.MinValue;
+        float minNoiseHeight = float.MaxValue;
+
+        for (int y = 0; y < mapDepth; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+
+                float amplitude = 1;
+                float frequency = 1;
+                float noiseHeight = 0;
+
+                float sampleX;
+                float sampleY;
+                float perlinNoise;
+
+                float maxValue = 0;
+
+                for (int o = 0; o < octaves; o++)
+                {
+                    maxValue += amplitude;
+
+                    sampleX = (x + offsetX) / scale * frequency;
+                    sampleY = (y + offsetY) / scale * frequency;
+
+                    // generate noise value using PerlinNoise
+                    //perlinNoise = Mathf.PerlinNoise(sampleX, sampleY) * 2.0f - 1.0f;
+                    perlinNoise = Mathf.PerlinNoise(x * frequency, y * frequency) ;
+                    //perlinNoise = Mathf.PerlinNoise(sampleX, sampleY);
+
+                    noiseHeight += perlinNoise * amplitude;
+
+                    amplitude *= persistance;
+                    frequency *= lacunarity;
+                }
+
+                noiseHeight /= maxValue;
+
+                /*
+                //noiseHeight = (noiseHeight + 1.0f) / 2.0f;
+
+                //noiseHeight = Mathf.Clamp(noiseHeight, 0.0f, 1.0f);
+
+                //  Help for Island / Beaches / smooth mountain sides
+                noiseHeight = Mathf.Pow(noiseHeight, softExp);
+                
+                //  White noise
+                sampleX = (x + offsetX) / 16;
+                sampleY = (y + offsetY) / 16;
+                perlinNoise = Mathf.PerlinNoise(sampleX, sampleY);
+                noiseHeight += perlinNoise * 0.025f;
+
+                noiseHeight = Mathf.Clamp(noiseHeight, 0.0f, 1.0f);
+                */
+
+
+                noiseMap[x, y] = noiseHeight;// * heightScale;
+
+                if (noiseHeight > maxNoiseHeight) maxNoiseHeight = noiseHeight;
+                if (noiseHeight < minNoiseHeight) minNoiseHeight = noiseHeight;
+
+            }
+
+        }
+
+        Debug.Log("Min Noise Value: " + minNoiseHeight + " Max Noise Value:" + maxNoiseHeight);
+
+        return noiseMap;
+    }     
+     
+     
 
 
     float[,] FilterNoiseMap(float[,] noiseMap, float filterWeight)
@@ -432,8 +497,8 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
                         splat[i] = 1;
                     }
                     else
-                    if (terrainHeight >= regions[i].startingHeight * (float)depth
-                     && terrainHeight <= regions[i+1].startingHeight * (float)depth)
+                    if (terrainHeight >= regions[i].startHeight * (float)depth
+                     && terrainHeight <= regions[i+1].startHeight * (float)depth)
                     {
                         for (int k=0; k < i; k++)
                         {
@@ -442,7 +507,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
                         splat[i] = 1;
                     }*/
 
-                    if (terrainHeight >= layers[i].startingHeight)
+                    if (terrainHeight >= layers[i].startHeight)
                     {
                         splatmapDataIndex = i;
                     }
@@ -484,7 +549,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
         splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
 
         //  Asumming squared sections
-        float scaleFactor = (float)mapChunkSize / (float)terrainData.alphamapWidth;
+        float scaleFactor = (float)terrainData.heightmapResolution / (float)terrainData.alphamapWidth;
 
 
         for (int z = 0; z < terrainData.alphamapHeight; z++)
@@ -578,5 +643,18 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
         }
 
         return normalizedvalues;
+    }
+
+    float[,] GetHeightMap(Terrain terrain, bool resetTerrain)
+    {
+        if (!resetTerrain)
+        {
+            return terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution,
+                                                terrain.terrainData.heightmapResolution);
+        }
+        else
+            return new float[terrain.terrainData.heightmapResolution,
+                             terrain.terrainData.heightmapResolution];
+
     }
 }
