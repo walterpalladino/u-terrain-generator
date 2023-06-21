@@ -718,14 +718,14 @@ MonoBehaviour:
     maxQuantity: 1000000
     sizeVariation: 0
   rocksData:
-    enabled: 0
-    prefabsIds: 
+    enabled: 1
+    prefabsIds: 03000000
     presence: 0.5
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
     maxSlope: 20
-    minAltitude: 0
+    minAltitude: 5
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0

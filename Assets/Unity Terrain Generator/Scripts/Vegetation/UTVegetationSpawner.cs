@@ -122,11 +122,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         CollectTerrain();
 
 
-        //  Clear all trees
+        //  Clear all Trees
         ClearTrees();
 
-        //  Clear all Grass
-        ClearGrass();
+        //  Clear all Rocks, Grass
+        ClearAllDetailLayers();
+
 
     }
 
@@ -154,7 +155,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         terrain.terrainData.SetDetailLayer(0, 0, 0, map);
     }
 
-    private void ClearGrass()
+    private void ClearAllDetailLayers()
     {
         DetailPrototype[] details = terrain.terrainData.detailPrototypes;
 
@@ -181,6 +182,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
     }
 
+    
 
     private void InitData()
     {
@@ -189,6 +191,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         grassData.spawnDataType = UTSpawnDataType.GrassTexture;
         grassData.layerName = "Grass";
+
+        rocksData.spawnDataType = UTSpawnDataType.DetailMesh;
+        rocksData.layerName = "Rocks";
     }
 
 
@@ -278,6 +283,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         InstantiateTreesOnTerrain(terrain, treesList);
 
         //  Place Rocks
+        GenerateRocks(terrain, rocksData, ref rocksList);
+        Debug.Log("Rocks to instantiate : " + rocksList.Count);
+        Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
+        InstantiateRocksOnTerrain(terrain, rocksList);
+
         //  Place Bushes
 
         //  Place Grass
@@ -320,6 +330,53 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
                         count++;
                         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Grass...", $"Grass {count} of {grassList.Count} Instantiated.", (float)count / (float)treesList.Count);
+#endif
+
+                    }
+
+                }
+
+                terrain.terrainData.SetDetailLayer(0, 0, i, map);
+
+            }
+        }
+
+
+    }
+
+    private void InstantiateRocksOnTerrain(Terrain terrain, List<UTSpawnObject> rocksList)
+    {
+
+#if UNITY_EDITOR
+        int count = 0;
+#endif
+
+        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
+        //Debug.Log("Found details numbers: " + details.Length);
+        for (int i = 0; i < details.Length; i++)
+        //foreach(DetailPrototype detail in details)
+        {
+            //Debug.Log("Processing details : " + i);
+
+            DetailPrototype detail = details[i];
+            if (detail.renderMode == DetailRenderMode.VertexLit)
+            {
+
+                int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
+                foreach (UTSpawnObject spawnObject in rocksList)
+                {
+
+                    if (spawnObject.prefabIndex == i)
+                    {
+
+                        float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
+                        float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
+
+                        map[(int)z, (int)x] = 1;
+
+#if UNITY_EDITOR
+                        count++;
+                        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Rocks...", $"Rocks {count} of {rocksList.Count} Instantiated.", (float)count / (float)treesList.Count);
 #endif
 
                     }
@@ -513,6 +570,72 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Grass...", $"Grass {count} of {objectsData.maxQuantity} Created.", (float)count / (float)objectsData.maxQuantity);
+#endif
+                if (count >= objectsData.maxQuantity) break;
+                if (control >= maxCount) break;
+
+            }
+        }
+    }
+
+    //  Rocks
+    private void GenerateRocks(Terrain terrain, UTSpawnData objectsData, ref List<UTSpawnObject> instantiatedObjects)
+    {
+        int count = 0;
+
+        int control = 0;
+        int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight;
+
+        if (objectsData.enabled)
+        {
+            while (true)
+            {
+                Vector3 position = Vector3.zero;
+
+                //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
+                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
+
+                //XZ world position
+                //Vector3 wPos = terrain.DetailToWorld(position.z, position.x);
+
+                float height = terrain.SampleHeight(position);
+
+                if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
+
+                float normalizedX = position.x / (float)terrain.terrainData.size.x;
+                float normalizedY = position.z / (float)terrain.terrainData.size.z;
+
+                float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
+
+                if (steepness > objectsData.maxSlope)
+                {
+                    //Debug.Log(steepness);
+                    control++;
+                    continue;
+                }
+
+                if (Random.value > objectsData.presence)
+                {
+                    control++;
+                    continue;
+                }
+
+                UTSpawnObject spawnObject = new UTSpawnObject();
+
+                int idx = objectsData.prefabsIds[Random.Range(0, objectsData.prefabsIds.Length)];
+                //  TODO : Add validation for existing index
+                spawnObject.prefabIndex = idx;
+                spawnObject.rotation = Random.Range(0, 359);
+                spawnObject.position = position;
+                spawnObject.scale = Random.Range(1.0f - objectsData.sizeVariation, 1.0f + objectsData.sizeVariation);
+
+                instantiatedObjects.Add(spawnObject);
+
+                count++;
+                control++;
+
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Rocks...", $"Rocks {count} of {objectsData.maxQuantity} Created.", (float)count / (float)objectsData.maxQuantity);
 #endif
                 if (count >= objectsData.maxQuantity) break;
                 if (control >= maxCount) break;
