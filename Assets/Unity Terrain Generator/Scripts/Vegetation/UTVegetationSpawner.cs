@@ -94,6 +94,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     public void Generate()
     {
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Vegetation...", "...", 0.0f);
+#endif
         InitData();
 
         CheckRequiredLayers();
@@ -117,17 +120,29 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     public void Clear()
     {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Working...", 0.0f);
+#endif
 
         InitData();
         CollectTerrain();
 
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Clearing Trees...", 0.50f);
+#endif
         //  Clear all Trees
         ClearTrees();
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Clearing Detail Layers...", 0.750f);
+#endif
         //  Clear all Rocks, Grass
         ClearAllDetailLayers();
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.ClearProgressBar();
+#endif
 
     }
 

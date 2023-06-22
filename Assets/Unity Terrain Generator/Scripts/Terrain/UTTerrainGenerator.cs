@@ -31,6 +31,16 @@ public struct UTTerrainCliff
     public float overlap;
 }
 
+[System.Serializable]
+public struct UTTerrainStain
+{
+    public bool enabled;
+    public int textureIndex;
+    [Range(0.0f, 1.0f)]
+    public float strength;
+}
+
+
 [RequireComponent(typeof(Terrain))]
 public class UTTerrainGenerator : MonoBehaviour, IGenerator
 {
@@ -68,7 +78,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     [Header("Layers Settings")]
     public UTTerrainLayer[] layers;
     public UTTerrainCliff cliffs;
-
+    public UTTerrainStain stain;
 
 
     [Header("Filters")]
@@ -111,8 +121,14 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     //  IGenerator implementation
     public void Clear()
     {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clearing Terrain...", "...", 0.0f);
+#endif
         terrain = GetComponent<Terrain>();
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clearing Terrain...", "Clearing Heightmap...", 0.10f);
+#endif
         //  Clear the heightmap
         float[,] heightMap;
         heightMap = new float[terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution];
@@ -125,23 +141,44 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
         }
         terrain.terrainData.SetHeights(0, 0, heightMap);
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clearing Terrain...", "Clearing Splatmaps...", 0.80f);
+#endif
         //  Update the splatmap based on the heights
         splatmapData = GenerateSplatMap(terrain.terrainData);
         terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.ClearProgressBar();
+#endif
     }
 
     public void Generate()
     {
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "...", 0.0f);
+#endif
         terrain = GetComponent<Terrain>();
         terrain.terrainData = GenerateTerrain(terrain.terrainData);
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.ClearProgressBar();
+#endif
     }
 
     private TerrainData GenerateTerrain(TerrainData terrainData)
     {
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Calculating noise maps...", 0.0f);
+#endif
+
         float[,] noiseMap = GenerateHeightMap(terrainData.heightmapResolution, terrainData.heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset);
         Debug.Log("Created noiseMap : " + noiseMap.GetLength(0) + " x " + noiseMap.GetLength(1));
 
+#if UNITY_EDITOR
+        if (filterQty > 0) {
+            UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Aplying filters...", 0.20f);
+        }
+#endif
         //  Apply noise reduction if required
         for (int f = 0; f < filterQty; f++)
         {
@@ -150,21 +187,27 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 
         if (createTerraces)
         {
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Creating terraces...", 0.40f);
+#endif
             noiseMap = GenerateTerraces(noiseMap, terraces);
         }
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Aplying masks...", 0.60f);
+#endif
         //  Check for masks
         if (mapMaskMode == UTTerrainMask.Circular)
         {
-            noiseMap = TerrainMaskUtils.ApplyCircularMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
+            noiseMap = UTTerrainMaskUtils.ApplyCircularMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
         }
         else if (mapMaskMode == UTTerrainMask.Square)
         {
-            noiseMap = TerrainMaskUtils.ApplySquareMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
+            noiseMap = UTTerrainMaskUtils.ApplySquareMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset);
         }
         else if (mapMaskMode == UTTerrainMask.Custom)
         {
-            noiseMap = TerrainMaskUtils.ApplyCustomMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset, terrainCurve);
+            noiseMap = UTTerrainMaskUtils.ApplyCustomMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset, terrainCurve);
         }
 
         //  Set the terrain heightmap
@@ -181,6 +224,9 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
         //  Array of heightmap samples to set (values range from 0 to 1, array indexed as [y,x]).
         terrainData.SetHeights(0, 0, noiseMap);
 
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Generating splatmaps...", 0.80f);
+#endif
         //  Generate splat maps for textures
         splatmapData = GenerateSplatMap(terrainData);
         terrainData.SetAlphamaps(0, 0, splatmapData);
@@ -560,14 +606,14 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
 
                 //float[] splat = new float[regions.Length];
 
-                float[] splat = new float[layers.Length + (cliffs.enabled ? 1 : 0)];
+                float[] splat = new float[layers.Length + (cliffs.enabled ? 1 : 0) + (stain.enabled ? 1 : 0) ];
                 float steepness = GetSteepnessAtPoint(terrainData, x, z);
                 //Debug.Log(steepness);
 
                 if (cliffs.enabled && steepness >= cliffs.minAngle)
                 {
                     //Debug.Log(steepness);
-                    splat[splat.Length - 1] = 1.0f;
+                    splat[cliffs.textureIndex] = 1.0f;
                 }
                 else
                 {
@@ -590,6 +636,9 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
                         {
                             splat[i] = 1;
                         }
+                    }
+                    if (stain.enabled) {
+                        splat[stain.textureIndex] = stain.strength;
                     }
 
                 }

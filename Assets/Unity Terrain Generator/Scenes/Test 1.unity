@@ -363,6 +363,10 @@ MonoBehaviour:
     textureIndex: 0
     minAngle: 0
     overlap: 0
+  stain:
+    enabled: 0
+    textureIndex: 0
+    strength: 0
   filterQty: 0
   filterWeight: 0.01
   createTerraces: 0
@@ -666,8 +670,12 @@ MonoBehaviour:
     textureIndex: 5
     minAngle: 45
     overlap: 0.25
+  stain:
+    enabled: 1
+    textureIndex: 6
+    strength: 1
   filterQty: 0
-  filterWeight: 0.5
+  filterWeight: 0.01
   createTerraces: 0
   terraces: 8
   softExp: 1.59
@@ -727,7 +735,7 @@ MonoBehaviour:
     groupRadius: 1
     freeRadius: 0.5
     maxSlope: 20
-    minAltitude: 5
+    minAltitude: 6
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
