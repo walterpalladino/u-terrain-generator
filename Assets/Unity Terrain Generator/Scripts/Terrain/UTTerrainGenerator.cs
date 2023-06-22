@@ -35,19 +35,12 @@ public struct UTTerrainCliff
 public class UTTerrainGenerator : MonoBehaviour, IGenerator
 {
 
-    [SerializeField]
-    bool autoUpdate;
+
+    [Header("Terrain Settings")]
+    [SerializeField] bool autoUpdate;
     public bool AutoUpdate { get => autoUpdate; }
-
-
-
-    private float xOffset;
-    private float zOffset;
-
-
-    //[Header("Terrain Settings")]
+    [SerializeField] bool addToExistingTerrain;
     //[SerializeField] Vector3 mapDimensions = new Vector3(500, 128, 500);
-
     //public int mapChunkSize = 512;
 
 
@@ -146,10 +139,6 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     private TerrainData GenerateTerrain(TerrainData terrainData)
     {
 
-        //int heightmapResolution = mapChunkSize + 1;
-        //terrainData.heightmapResolution = heightmapResolution;
-        //terrainData.size = dimensions;
-
         float[,] noiseMap = GenerateHeightMap(terrainData.heightmapResolution, terrainData.heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset);
         Debug.Log("Created noiseMap : " + noiseMap.GetLength(0) + " x " + noiseMap.GetLength(1));
 
@@ -178,6 +167,17 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
             noiseMap = TerrainMaskUtils.ApplyCustomMask(noiseMap, terrainData.heightmapResolution, maskMarginOffset, terrainCurve);
         }
 
+        //  Set the terrain heightmap
+        if (addToExistingTerrain) {
+            float[,] heights = terrainData.GetHeights(0,0,terrainData.heightmapResolution, terrainData.heightmapResolution);
+            for (int z = 0; z < terrainData.heightmapResolution; z++)
+            {
+                for (int x = 0; x < terrainData.heightmapResolution; x++)
+                {
+                    noiseMap[x, z] += heights[x, z];
+                }
+            }
+        }
         //  Array of heightmap samples to set (values range from 0 to 1, array indexed as [y,x]).
         terrainData.SetHeights(0, 0, noiseMap);
 
@@ -656,5 +656,46 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
             return new float[terrain.terrainData.heightmapResolution,
                              terrain.terrainData.heightmapResolution];
 
+    }
+
+
+    public void AddRiver() {
+
+        terrain = GetComponent<Terrain>();
+        TerrainData terrainData = terrain.terrainData;
+        float[,] heights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution,
+                                                terrainData.heightmapResolution);
+
+        Vector2Int startPoint = new Vector2Int(Random.Range(0, terrainData.heightmapResolution),
+            Random.Range(0, terrainData.heightmapResolution));
+
+        Vector2Int endPoint = new Vector2Int(Random.Range(0, terrainData.heightmapResolution),
+            Random.Range(0, terrainData.heightmapResolution));
+
+        //  TODO : Add validation when creates starts end end points
+
+        float startPointHeight = terrainData.GetHeight(startPoint.x, startPoint.y);
+        float endPointHeight = terrainData.GetHeight(endPoint.x, endPoint.y);
+
+        float distance = Vector2.Distance(startPoint, endPoint);
+        Debug.Log("River distance : " + distance);
+        float step = 1.0f / distance;
+
+        for (float t = 0.0f; t < 1.0f; t += step) {
+            float x = startPoint.x + (endPoint.x - startPoint.x) * t;
+            float y = startPoint.y + (endPoint.y - startPoint.y) * t;
+
+            Debug.Log("River running at : " + x + " / " + y + " for t : " + t );
+
+            float actualHeight = heights[(int)x, (int)y];
+
+            heights[(int)x, (int)y] = 0.0f;
+        }
+
+        terrainData.SetHeights(0, 0, heights);
+
+        //  Generate splat maps for textures
+        splatmapData = GenerateSplatMap(terrainData);
+        terrainData.SetAlphamaps(0, 0, splatmapData);
     }
 }

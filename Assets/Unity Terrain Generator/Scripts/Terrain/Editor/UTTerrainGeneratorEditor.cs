@@ -29,10 +29,14 @@ public class UTTerrainGeneratorEditor : Editor
 
         if (GUILayout.Button("Generate"))
         {
-            generator.Clear();
             generator.Generate();
         }
-
+        /*
+        if (GUILayout.Button("Add River"))
+        {
+            generator.AddRiver();
+        }
+        */
         if (GUILayout.Button("Clear"))
         {
             generator.Clear();

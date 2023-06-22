@@ -342,6 +342,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoUpdate: 0
+  addToExistingTerrain: 0
   noiseScale: 256
   octaves: 1
   persistance: 0
@@ -588,6 +589,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoUpdate: 0
+  addToExistingTerrain: 0
   noiseScale: 216
   octaves: 8
   persistance: 0.4
@@ -602,24 +604,24 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0.26065186
-      outSlope: 0.26065186
+      inSlope: 1.0443189
+      outSlope: 1.0443189
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.14763793
-      value: 0.0384821
-      inSlope: 0.564912
-      outSlope: 0.564912
+      time: 0.06846771
+      value: 0.07150212
+      inSlope: 3.3506105
+      outSlope: 3.3506105
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.77601314
-      outWeight: 0.33333334
+      inWeight: 0.20887277
+      outWeight: 0.47304568
     - serializedVersion: 3
-      time: 0.5667261
-      value: 0.45650315
+      time: 0.6750635
+      value: 0.6852782
       inSlope: 2.1226397
       outSlope: 2.1226397
       tangentMode: 0
@@ -629,11 +631,11 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0.06407962
-      outSlope: 0.06407962
+      inSlope: 0.032039944
+      outSlope: 0.032039944
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.38410044
+      inWeight: 0.57618093
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -665,7 +667,7 @@ MonoBehaviour:
     minAngle: 45
     overlap: 0.25
   filterQty: 0
-  filterWeight: 0.1
+  filterWeight: 0.5
   createTerraces: 0
   terraces: 8
   softExp: 1.59
@@ -940,7 +942,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1469694237
 Transform:
   m_ObjectHideFlags: 0
