@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 using static UnityEditor.Progress;
@@ -132,71 +133,19 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Clearing Trees...", 0.50f);
 #endif
         //  Clear all Trees
-        ClearTrees();
+        UTTerrainUtils.ClearTrees(terrain);
 
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Clearing Detail Layers...", 0.750f);
 #endif
         //  Clear all Rocks, Grass
-        ClearAllDetailLayers();
+        UTTerrainUtils.ClearAllDetailLayers(terrain);
 
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
 
     }
-
-    private void ClearTrees()
-    {
-        terrain.terrainData.treeInstances = new TreeInstance[0];
-
-        //  Clear all details (grass, etc)
-        // Get all of layer zero.
-        var map = terrain.terrainData.GetDetailLayer(
-            0, 0,
-            terrain.terrainData.detailWidth, terrain.terrainData.detailHeight,
-            0);
-
-        // For each pixel in the detail map...
-        for (var y = 0; y < terrain.terrainData.detailHeight; y++)
-        {
-            for (var x = 0; x < terrain.terrainData.detailWidth; x++)
-            {
-                map[x, y] = 0;
-            }
-        }
-
-        // Assign the modified map back.
-        terrain.terrainData.SetDetailLayer(0, 0, 0, map);
-    }
-
-    private void ClearAllDetailLayers()
-    {
-        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
-
-        for (int i = 0; i < details.Length; i++)
-        {
-
-            // Get all of layer zero.
-            int [,] map = terrain.terrainData.GetDetailLayer(
-                        0, 0,
-                        terrain.terrainData.detailWidth, terrain.terrainData.detailHeight,
-                        i);
-
-            // For each pixel in the detail map...
-            for (var y = 0; y < terrain.terrainData.detailHeight; y++)
-            {
-                for (var x = 0; x < terrain.terrainData.detailWidth; x++)
-                {
-                    map[x, y] = 0;
-                }
-            }
-
-            // Assign the modified map back.
-            terrain.terrainData.SetDetailLayer(0, 0, i, map);
-        }
-    }
-
     
 
     private void InitData()
@@ -406,87 +355,95 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     }
 
-    /*
-    public void PlaceTerrainObjects(Terrain terrain, int x, int z, float terrainTileSize)
-    {
-
-        float xMin = x * terrainTileSize + terrainMin.x;
-        float zMin = z * terrainTileSize + terrainMin.z;
-        float xMax = (x + 1) * terrainTileSize + terrainMin.x;
-        float zMax = (z + 1) * terrainTileSize + terrainMin.z;
-
-        Debug.Log("Placing objects on area : " + xMin + "/" + zMin + " to " + xMax + "/" + zMax);
-
-        GenerateTerrainObjects(treesData, ref treesList, xMin, zMin, xMax, zMax);
-        Debug.Log("Objects to instantiate : " + treesList.Count);
-        InstantiateTreesOnTerrain(terrain, treesList);
-
-        //PlaceTrees(xMin, zMin, xMax, zMax);
-        //PlaceRocks(xMin, zMin, xMax, zMax);
-        //PlaceBushes(xMin, zMin, xMax, zMax);
-
-        //PlaceGrass(xMin, zMin, xMax, zMax);
-    }
-*/
-
-
+   
     //  Trees
     private void GenerateTrees(Terrain terrain, UTSpawnData objectsData, ref List<UTSpawnObject> instantiatedObjects)
     {
-        int count = 0;
-
         if (objectsData.enabled)
         {
-            while (true)
+            int count = 0;
+            int groupObjectCount = 0;
+            Vector3 centerGroupPosition = Vector3.zero;
+            int prefabIdx = 0;
+
+            while (count < objectsData.maxQuantity)
             {
+                count++;
 
-                Vector3 position = Vector3.zero;
+                if (groupObjectCount == 0) {
+                    groupObjectCount = objectsData.groupSize;
+                    if (groupObjectCount == 0) {
+                        groupObjectCount = 1;
+                    }
 
-                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
+                    // Get the group center position
+                    centerGroupPosition = GetCenterGroupPosition(terrain, objectsData);
+                    //                    centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
+
+                    //  Every tree in the group will be the same prefab
+                    //  TODO : Add validation for existing index
+                    prefabIdx = objectsData.prefabsIds[Random.Range(0, objectsData.prefabsIds.Length)];
+                }
+
+                groupObjectCount--;
+
+                Vector3 position = GetPositionInGroup(centerGroupPosition, objectsData.groupRadius);
+
+                if (CheckPositionOverlap(instantiatedObjects, objectsData, position)) {
+                    continue;
+                }
+
+//                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
                 //float height = terrain.terrainData.GetHeight((int)position.z, (int)position.x);
                 float height = terrain.SampleHeight(position);
                 //if (height > 0) Debug.Log(height);
                 if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
-
+                /*
                 float normalizedX = position.x / (float)terrain.terrainData.size.x;
                 float normalizedY = position.z / (float)terrain.terrainData.size.z;
 
                 float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
-                if (steepness > objectsData.maxSlope)
+                */
+                float stepness = UTTerrainUtils.GetStepness(terrain, position);
+                if (stepness > objectsData.maxSlope)
                 {
                     //Debug.Log(steepness);
+                    //Debug.Log("rejected by steepness");
+                    //count++;
                     continue;
                 }
 
-                if ((Random.value * 100f) > objectsData.presence)
+                if ((Random.value) > objectsData.presence)
                 {
+                    //Debug.Log("rejected by presence");
+                    //count++;
                     continue;
                 }
+                //Debug.Log(count);
 
                 UTSpawnObject spawnObject = new UTSpawnObject();
 
-                int idx = objectsData.prefabsIds[Random.Range(0, objectsData.prefabsIds.Length)];
-                //  TODO : Add validation for existing index
-                spawnObject.prefabIndex = idx;
+                spawnObject.prefabIndex = prefabIdx;
                 spawnObject.rotation = Random.Range(0, 359);
                 spawnObject.position = position;
                 spawnObject.scale = Random.Range(1.0f - objectsData.sizeVariation, 1.0f + objectsData.sizeVariation);
 
                 instantiatedObjects.Add(spawnObject);
 
-                count++;
+                //count++;
 
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {objectsData.maxQuantity} Created.", (float)count / (float)objectsData.maxQuantity);
 #endif
 
-                if (count >= objectsData.maxQuantity) break;
+//                if (count >= objectsData.maxQuantity) break;
             }
         }
 
     }
+
 
     private void InstantiateTreesOnTerrain(Terrain terrain, List<UTSpawnObject> treesList)
     {
@@ -551,12 +508,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
 
-                float normalizedX = position.x / (float)terrain.terrainData.size.x;
-                float normalizedY = position.z / (float)terrain.terrainData.size.z;
-
-                float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
-
-                if (steepness > objectsData.maxSlope)
+                float stepness = UTTerrainUtils.GetStepness(terrain, position);
+                if (stepness > objectsData.maxSlope)
                 {
                     //Debug.Log(steepness);
                     control++;
@@ -617,12 +570,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
 
-                float normalizedX = position.x / (float)terrain.terrainData.size.x;
-                float normalizedY = position.z / (float)terrain.terrainData.size.z;
-
-                float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
-
-                if (steepness > objectsData.maxSlope)
+                float stepness = UTTerrainUtils.GetStepness(terrain, position);
+                if (stepness > objectsData.maxSlope)
                 {
                     //Debug.Log(steepness);
                     control++;
@@ -890,7 +839,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         while (!validPosition && tryCount++ < maxTries)
         {
             //  Obtain a position
-            position = GetPositionInArea(centerGroup, groupRadius);
+            position = GetPositionInGroup(centerGroup, groupRadius);
             Debug.Log("testing position : " + position);
             validPosition = CheckValidPosition(position, maxSlope, minAltitude, maxAltitude, out height);
             position.y = height;
@@ -899,19 +848,16 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         return validPosition;
     }
 
-    private Vector3 GetPositionInArea(Vector3 centerGroup, float groupRadius)
+    private Vector3 GetPositionInGroup(Vector3 centerGroup, float groupRadius)
     {
         Vector3 position;
 
-        //position = new Vector3(Random.Range(xMin - groupRadius, xMax + groupRadius), 0, Random.Range(zMin - groupRadius, zMax + groupRadius));
         position = new Vector3(Random.Range(centerGroup.x - groupRadius, centerGroup.x + groupRadius), 0, Random.Range(centerGroup.z - groupRadius, centerGroup.z + groupRadius));
-
-
+        
         float angle = Random.Range(0, 2 * Mathf.PI);
         float distance = Random.Range(0, groupRadius);
-        //position = centerGroup + groupRadius * new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
         position = centerGroup + distance * new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-
+        
         return position;
     }
 
@@ -1037,7 +983,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     }
 
-
+    /*
     public static void ChangeLayersRecursively(GameObject go, string name)
     {
         go.layer = LayerMask.NameToLayer(name);
@@ -1045,6 +991,42 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         {
             ChangeLayersRecursively(child.gameObject, name);
         }
+    }*/
+
+
+    private Vector3 GetCenterGroupPosition(Terrain terrain, UTSpawnData objectsData)
+    {
+        /*
+        float x = (int)terrain.terrainData.size.x / objectsData.groupRadius;
+        x = x + objectsData.groupRadius + objectsData.groupRadius / 2;
+
+        float z = (int)terrain.terrainData.size.z / objectsData.groupRadius;
+        z = z + objectsData.groupRadius + objectsData.groupRadius / 2;
+        */
+        Vector3 centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
+
+        float areaRadius = (objectsData.groupRadius + objectsData.freeRadius);
+
+        centerGroupPosition.x = (int)centerGroupPosition.x / (int)areaRadius;
+        centerGroupPosition.x = centerGroupPosition.x * (int)areaRadius + (int)areaRadius / 2;
+
+        centerGroupPosition.z = (int)centerGroupPosition.z / (int)areaRadius;
+        centerGroupPosition.z = centerGroupPosition.z * (int)areaRadius + (int)areaRadius / 2;
+
+        return centerGroupPosition;
+    }
+
+    private bool CheckPositionOverlap(List<UTSpawnObject> instantiatedObjects, UTSpawnData objectsData, Vector3 position)
+    {
+        foreach (UTSpawnObject spawnObject in instantiatedObjects)
+        {
+            if (Vector3.Distance(position, spawnObject.position) < 2.0f * objectsData.freeRadius)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

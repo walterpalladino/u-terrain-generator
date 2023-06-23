@@ -694,14 +694,14 @@ MonoBehaviour:
   treesData:
     enabled: 1
     prefabsIds: 0000000001000000020000000300000004000000
-    presence: 0.1
+    presence: 1
     groupSize: 5
-    groupRadius: 5
-    freeRadius: 2
-    maxSlope: 20
+    groupRadius: 15
+    freeRadius: 1
+    maxSlope: 30
     minAltitude: 10
     maxAltitude: 100
-    maxQuantity: 2500
+    maxQuantity: 10000
     sizeVariation: 0.5
   bushesData:
     enabled: 0
@@ -733,7 +733,7 @@ MonoBehaviour:
     presence: 0.5
     groupSize: 1
     groupRadius: 1
-    freeRadius: 0.5
+    freeRadius: 5
     maxSlope: 20
     minAltitude: 6
     maxAltitude: 100

@@ -27,7 +27,7 @@ public class UTSpawnData
     public int groupSize = 1;
     [Range(1.0f, 15.0f)]
     public float groupRadius = 1.0f;
-    [Range(0.5f, 5.0f)]
+    [Range(0.5f, 25.0f)]
     public float freeRadius = 0.5f;
     [Range(0.0f, 90.0f)]
     public float maxSlope = 20.0f;
