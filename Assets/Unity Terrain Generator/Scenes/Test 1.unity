@@ -363,10 +363,20 @@ MonoBehaviour:
     textureIndex: 0
     minAngle: 0
     overlap: 0
+    texture: {fileID: 0}
+    bump: {fileID: 0}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 1, y: 1}
   stain:
     enabled: 0
     textureIndex: 0
     strength: 0
+    texture: {fileID: 0}
+    bump: {fileID: 0}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 1, y: 1}
   filterQty: 0
   filterWeight: 0.01
   createTerraces: 0
@@ -645,35 +655,75 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   layers:
-  - textureIndex: 0
+  - valid: 1
+    textureIndex: 0
     startHeight: 0
     endHeight: 7
     overlap: 0.25
-  - textureIndex: 1
+    texture: {fileID: 2800000, guid: 922b2f4389cf30f46ad4dd56df061162, type: 3}
+    bump: {fileID: 2800000, guid: 30b25325c708fc342ab5de0df5b1fff3, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
+  - valid: 1
+    textureIndex: 1
     startHeight: 5
     endHeight: 12
     overlap: 0.25
-  - textureIndex: 2
+    texture: {fileID: 2800000, guid: 5c38e2edb8ae412468d3186b2e38caf1, type: 3}
+    bump: {fileID: 2800000, guid: 32e75137122e86e419af0c829889e58c, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
+  - valid: 1
+    textureIndex: 2
     startHeight: 10
     endHeight: 20
     overlap: 2
-  - textureIndex: 3
+    texture: {fileID: 2800000, guid: 1d2634ee9f36b834980539d2a726ef75, type: 3}
+    bump: {fileID: 2800000, guid: 0f84519bcde78484388818cad0da1439, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
+  - valid: 1
+    textureIndex: 3
     startHeight: 18
     endHeight: 38
     overlap: 2
-  - textureIndex: 4
+    texture: {fileID: 2800000, guid: aae5d0c409b2960409c4797c4932938b, type: 3}
+    bump: {fileID: 2800000, guid: 348ff04e4c4973e4fb7f88b376262aee, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
+  - valid: 1
+    textureIndex: 4
     startHeight: 32
     endHeight: 256
     overlap: 0
+    texture: {fileID: 2800000, guid: c2e975e8a074dff45aee75e580a54344, type: 3}
+    bump: {fileID: 2800000, guid: 48c3f9bf0c6c95b4e8a00c6b9a8162be, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
   cliffs:
     enabled: 1
     textureIndex: 5
     minAngle: 45
     overlap: 0.25
+    texture: {fileID: 2800000, guid: 097d970815a3bf44c83b5d182280ea39, type: 3}
+    bump: {fileID: 2800000, guid: 6aae0f592807068499eb683d55806674, type: 3}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 5, y: 5}
   stain:
-    enabled: 1
+    enabled: 0
     textureIndex: 6
     strength: 1
+    texture: {fileID: 2800000, guid: 907f7bd526afa4c739937d6e536fce16, type: 3}
+    bump: {fileID: 0}
+    bumpStrength: 1
+    tileOffset: {x: 0, y: 0}
+    tileSize: {x: 1, y: 1}
   filterQty: 0
   filterWeight: 0.01
   createTerraces: 0

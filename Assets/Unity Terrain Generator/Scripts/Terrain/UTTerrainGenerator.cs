@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 
@@ -13,31 +14,53 @@ public enum UTTerrainMask
 }
 
 [System.Serializable]
-public struct UTTerrainLayer
+public class UTTerrainLayer
 {
+    public bool valid;
+
     public int textureIndex;
-    //public float startingHeight;
     public float startHeight;
     public float endHeight;
     public float overlap;
+
+    public Texture2D texture = null;
+    public Texture2D bump = null;
+    [Range(-10.0f,10.0f)]
+    public float bumpStrength = 1.0f;
+    public Vector2 tileOffset = new Vector2(0, 0);
+    public Vector2 tileSize = new Vector2(1, 1);
 }
 
 [System.Serializable]
-public struct UTTerrainCliff
+public class UTTerrainCliff
 {
     public bool enabled;
     public int textureIndex;
     public float minAngle;
     public float overlap;
+
+    public Texture2D texture = null;
+    public Texture2D bump = null;
+    [Range(-10.0f, 10.0f)]
+    public float bumpStrength = 1.0f;
+    public Vector2 tileOffset = new Vector2(0, 0);
+    public Vector2 tileSize = new Vector2(1, 1);
 }
 
 [System.Serializable]
-public struct UTTerrainStain
+public class UTTerrainStain
 {
     public bool enabled;
     public int textureIndex;
     [Range(0.0f, 1.0f)]
     public float strength;
+
+    public Texture2D texture = null;
+    public Texture2D bump = null;
+    [Range(-10.0f, 10.0f)]
+    public float bumpStrength = 1.0f;
+    public Vector2 tileOffset = new Vector2(0, 0);
+    public Vector2 tileSize = new Vector2(1, 1);
 }
 
 
@@ -102,7 +125,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 
 
     private Terrain terrain;
-    private float[,,] splatmapData;
+    //private float[,,] splatmapData;
 
 
 
@@ -144,12 +167,25 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clearing Terrain...", "Clearing Splatmaps...", 0.80f);
 #endif
-        //  Update the splatmap based on the heights
-        splatmapData = GenerateSplatMap(terrain.terrainData);
-        terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
+        UpdateSplatMapsOnTerrain(terrain);
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
+    }
+
+    private void UpdateSplatMapsOnTerrain(Terrain terrain)
+    {
+
+        if (terrain.terrainData.alphamapLayers == 0)
+        {
+            Debug.Log("terrainData.alphamapLayers == 0. Can not paint terrain");
+            return;
+        }
+
+        //  Update the splatmap based on the heights
+        float[,,] splatmapData = GenerateSplatMap(terrain.terrainData);
+        terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
+
     }
 
     public void Generate()
@@ -170,6 +206,12 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Calculating noise maps...", 0.0f);
 #endif
+
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Updating Terrain Layers...", 0.10f);
+#endif
+        UpdateTerrainLayers(terrain);
 
         float[,] noiseMap = GenerateHeightMap(terrainData.heightmapResolution, terrainData.heightmapResolution, seed, noiseScale, octaves, persistance, lacunarity, offset);
         Debug.Log("Created noiseMap : " + noiseMap.GetLength(0) + " x " + noiseMap.GetLength(1));
@@ -227,9 +269,8 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Generating splatmaps...", 0.80f);
 #endif
-        //  Generate splat maps for textures
-        splatmapData = GenerateSplatMap(terrainData);
-        terrainData.SetAlphamaps(0, 0, splatmapData);
+
+        UpdateSplatMapsOnTerrain(terrain);
 
         return terrainData;
     }
@@ -523,7 +564,7 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
     private float[,,] GenerateSplatMapV1(TerrainData terrainData)
     {
 
-        splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
+        float[,,] splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
 
         for (int z = 0; z < terrainData.alphamapHeight; z++)
         {
@@ -589,10 +630,12 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
 
     private float[,,] GenerateSplatMap(TerrainData terrainData)
     {
+
         Debug.Log("GenerateSplatMap for : " + terrainData.alphamapHeight + " x " + terrainData.alphamapWidth);
         Debug.Log("cliffs.enabled " + cliffs.enabled);
+        Debug.Log("stain.enabled " + stain.enabled);
 
-        splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
+        float[,,] splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
 
         //  Asumming squared sections
         float scaleFactor = (float)terrainData.heightmapResolution / (float)terrainData.alphamapWidth;
@@ -743,8 +786,127 @@ float[,] GenerateHeightMapV1(int mapWidth, int mapDepth, int seed, float scale, 
 
         terrainData.SetHeights(0, 0, heights);
 
-        //  Generate splat maps for textures
-        splatmapData = GenerateSplatMap(terrainData);
-        terrainData.SetAlphamaps(0, 0, splatmapData);
+        UpdateSplatMapsOnTerrain(terrain);
     }
+
+
+    private void UpdateTerrainLayers(Terrain terrain) {
+
+        if (!AssetDatabase.IsValidFolder("Assets/TerrainLayers")) {
+            AssetDatabase.CreateFolder("Assets", "TerrainLayers");
+        }
+
+        List<TerrainLayer> terrainLayers = new List<TerrainLayer>();
+        int terrainIndex = 0;
+
+        //  Add terrain layers
+        for (int l = 0; l < layers.Length; l++)
+        {
+            if (layers[l].texture == null)
+            {
+                layers[l].valid = false;
+                continue;
+            }
+            else {
+                layers[l].valid = true;
+            }
+
+            TerrainLayer terrainLayer = new TerrainLayer();
+
+            terrainLayer.diffuseTexture = layers[l].texture;
+
+            if (layers[l].bump != null) {
+                terrainLayer.normalMapTexture = layers[l].bump;
+                terrainLayer.normalScale = layers[l].bumpStrength;
+            }
+
+            terrainLayer.tileOffset = layers[l].tileOffset;
+            terrainLayer.tileSize = layers[l].tileSize;
+            terrainLayer.diffuseTexture.Apply(true);
+
+            string path = "Assets/TerrainLayers/" + this.gameObject.name + " TerrainLayer " + terrainIndex + ".terrainlayer";
+            AssetDatabase.CreateAsset(terrainLayer, path);
+
+            layers[l].textureIndex = terrainIndex;
+            terrainIndex++;
+
+            Selection.activeObject = this.gameObject;
+
+            terrainLayers.Add(terrainLayer);
+        }
+
+
+        //  Add Cliffs layer
+        if (cliffs.enabled) {
+            if (cliffs.texture == null)
+            {
+                cliffs.enabled = false;
+            }
+            else
+            {
+                TerrainLayer terrainLayer = new TerrainLayer();
+
+                terrainLayer.diffuseTexture = cliffs.texture;
+
+                if (cliffs.bump != null)
+                {
+                    terrainLayer.normalMapTexture = cliffs.bump;
+                    terrainLayer.normalScale = cliffs.bumpStrength;
+                }
+
+                terrainLayer.tileOffset = cliffs.tileOffset;
+                terrainLayer.tileSize = cliffs.tileSize;
+                terrainLayer.diffuseTexture.Apply(true);
+
+                string path = "Assets/TerrainLayers/" + this.gameObject.name + " CliffsLayer " + terrainIndex + ".terrainlayer";
+                AssetDatabase.CreateAsset(terrainLayer, path);
+
+                cliffs.textureIndex = terrainIndex;
+                terrainIndex++;
+
+                Selection.activeObject = this.gameObject;
+
+                terrainLayers.Add(terrainLayer);
+            }
+        }
+        //  Add Stain layer
+        if (stain.enabled) {
+            if (stain.texture == null)
+            {
+                stain.enabled = false;
+            }
+            else
+            {
+                TerrainLayer terrainLayer = new TerrainLayer();
+
+                terrainLayer.diffuseTexture = stain.texture;
+
+                if (stain.bump != null)
+                {
+                    terrainLayer.normalMapTexture = stain.bump;
+                    terrainLayer.normalScale = stain.bumpStrength;
+                }
+
+                terrainLayer.tileOffset = stain.tileOffset;
+                terrainLayer.tileSize = stain.tileSize;
+                terrainLayer.diffuseTexture.Apply(true);
+
+                string path = "Assets/TerrainLayers/" + this.gameObject.name + " StainLayer " + terrainIndex + ".terrainlayer";
+                AssetDatabase.CreateAsset(terrainLayer, path);
+
+                stain.textureIndex = terrainIndex;
+                terrainIndex++;
+
+                Selection.activeObject = this.gameObject;
+
+                terrainLayers.Add(terrainLayer);
+            }
+        }
+
+        // apply textures back into the terrain data
+        terrain.terrainData.terrainLayers = terrainLayers.ToArray();
+    }
+
+    
+
 }
