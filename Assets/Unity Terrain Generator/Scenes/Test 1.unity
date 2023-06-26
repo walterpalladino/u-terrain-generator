@@ -263,6 +263,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 10000
     sizeVariation: 0
+    sinkBottom: 0
   bushesData:
     enabled: 0
     prefabsIds: 
@@ -275,6 +276,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
+    sinkBottom: 0
   grassData:
     enabled: 1
     prefabsIds: 
@@ -287,6 +289,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
+    sinkBottom: 0
   rocksData:
     enabled: 0
     prefabsIds: 
@@ -299,6 +302,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
+    sinkBottom: 0
   randomSeed: 0
   maxTriesToLocateObjects: 3
   terrainTileSize: 50
@@ -744,15 +748,16 @@ MonoBehaviour:
   treesData:
     enabled: 1
     prefabsIds: 0000000001000000020000000300000004000000
-    presence: 1
-    groupSize: 5
+    presence: 0.5
+    groupSize: 10
     groupRadius: 15
-    freeRadius: 1
+    freeRadius: 3
     maxSlope: 30
     minAltitude: 10
     maxAltitude: 100
-    maxQuantity: 10000
+    maxQuantity: 166666
     sizeVariation: 0.5
+    sinkBottom: 0.25
   bushesData:
     enabled: 0
     prefabsIds: 
@@ -765,6 +770,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
+    sinkBottom: 0
   grassData:
     enabled: 1
     prefabsIds: 000000000100000002000000
@@ -775,8 +781,9 @@ MonoBehaviour:
     maxSlope: 60
     minAltitude: 7
     maxAltitude: 50
-    maxQuantity: 1000000
+    maxQuantity: 500000
     sizeVariation: 0
+    sinkBottom: 0
   rocksData:
     enabled: 1
     prefabsIds: 03000000
@@ -789,6 +796,7 @@ MonoBehaviour:
     maxAltitude: 100
     maxQuantity: 1000
     sizeVariation: 0
+    sinkBottom: 0
   randomSeed: 0
   maxTriesToLocateObjects: 3
   terrainTileSize: 50

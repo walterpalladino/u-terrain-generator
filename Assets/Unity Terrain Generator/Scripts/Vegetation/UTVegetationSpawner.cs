@@ -98,9 +98,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Vegetation...", "...", 0.0f);
 #endif
-        InitData();
-
         CheckRequiredLayers();
+
+        InitData();
 
         Random.InitState(randomSeed);
         NoiseGenerator.Init();
@@ -125,9 +125,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Working...", 0.0f);
 #endif
 
-        InitData();
         CollectTerrain();
-
+        InitData();
 
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Clearing Trees...", 0.50f);
@@ -150,6 +149,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     private void InitData()
     {
+
+        terrain.gameObject.layer = LayerMask.NameToLayer("Terrain");
+
         treesData.spawnDataType = UTSpawnDataType.Tree;
         treesData.layerName = "Trees";
 
@@ -176,13 +178,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     */
     private void CheckRequiredLayers()
     {
-        LayerUtils.CreateLayer("Terrain", 16);
-        LayerUtils.CreateLayer("Trees", 17);
-        LayerUtils.CreateLayer("Vegetation", 18);
-        LayerUtils.CreateLayer("Rocks", 19);
-        LayerUtils.CreateLayer("Buildings", 20);
-        LayerUtils.CreateLayer("Grass", 21);
-        //LayerUtils.CreateLayer("Special Area", 22);
+        UTLayerUtils.CreateLayer("Terrain", 16);
+        UTLayerUtils.CreateLayer("Trees", 17);
+        UTLayerUtils.CreateLayer("Vegetation", 18);
+        UTLayerUtils.CreateLayer("Rocks", 19);
+        UTLayerUtils.CreateLayer("Buildings", 20);
+        UTLayerUtils.CreateLayer("Grass", 21);
+        //UTLayerUtils.CreateLayer("Special Area", 22);
     }
 
     //  TODO : Check if boundary changes when changing the terrain position
@@ -241,10 +243,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     {
         Debug.Log("Placing objects on terrain : " + terrain.gameObject.name);
 
-        //  Place Trees
-        GenerateTrees(terrain, treesData, ref treesList);
-        Debug.Log("Trees to instantiate : " + treesList.Count);
-        InstantiateTreesOnTerrain(terrain, treesList);
 
         //  Place Rocks
         GenerateRocks(terrain, rocksData, ref rocksList);
@@ -259,6 +257,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         Debug.Log("Grass to instantiate : " + grassList.Count);
         Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
         InstantiateGrassOnTerrain(terrain, grassList);
+
+
+        //  Place Trees
+        GenerateTrees(terrain, treesData, ref treesList);
+        Debug.Log("Trees to instantiate : " + treesList.Count);
+        InstantiateTreesOnTerrain(terrain, treesList);
+
     }
 
     private void InstantiateGrassOnTerrain(Terrain terrain, List<UTSpawnObject> grassList)
@@ -361,6 +366,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     {
         if (objectsData.enabled)
         {
+
+            objectsData.maxQuantity = (int)(terrain.terrainData.size.x * terrain.terrainData.size.z / objectsData.freeRadius * objectsData.presence);
+
             int count = 0;
             int groupObjectCount = 0;
             Vector3 centerGroupPosition = Vector3.zero;
@@ -389,30 +397,45 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 Vector3 position = GetPositionInGroup(centerGroupPosition, objectsData.groupRadius);
 
+                float height;
+                if (!CheckValidPosition(terrain,position,objectsData, out height)) {
+                    continue;
+                }
+                position.y = height - objectsData.sinkBottom;
+
                 if (CheckPositionOverlap(instantiatedObjects, objectsData, position)) {
                     continue;
                 }
-
+                /*
+                GameObject hitGameObject;
+                float height;
+                Vector3 normal;
+                UTHit psHit = CheckAt( position, out height, out normal, out hitGameObject);
+                if (psHit != UTHit.TERRAIN_HIT) {
+                    continue;
+                }
+                position.y = height;
+                */
 //                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
                 //float height = terrain.terrainData.GetHeight((int)position.z, (int)position.x);
-                float height = terrain.SampleHeight(position);
+                //float height = terrain.SampleHeight(position);
                 //if (height > 0) Debug.Log(height);
-                if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
+//                if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
                 /*
                 float normalizedX = position.x / (float)terrain.terrainData.size.x;
                 float normalizedY = position.z / (float)terrain.terrainData.size.z;
 
                 float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
                 */
-                float stepness = UTTerrainUtils.GetStepness(terrain, position);
-                if (stepness > objectsData.maxSlope)
-                {
+//                float stepness = UTTerrainUtils.GetStepness(terrain, position);
+//                if (stepness > objectsData.maxSlope)
+//                {
                     //Debug.Log(steepness);
                     //Debug.Log("rejected by steepness");
                     //count++;
-                    continue;
-                }
+//                    continue;
+//                }
 
                 if ((Random.value) > objectsData.presence)
                 {
@@ -444,6 +467,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     }
 
+    
 
     private void InstantiateTreesOnTerrain(Terrain terrain, List<UTSpawnObject> treesList)
     {
@@ -460,15 +484,18 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             treeInstance.widthScale = 1.0f;
 
             treeInstance.prototypeIndex = spawnObject.prefabIndex;
-            //  Position need to be scaled from 0 to 1 based on the terrain width and height
-            //treeInstance.position = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y, spawnObject.position.z / terrain.terrainData.size.z);
-            treeInstance.position = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y, spawnObject.position.z / terrain.terrainData.size.z);
+
+            //  Position need to be normalized (scaled from 0 to 1) based on the terrain width and height
+            Vector3 normalizedPosition = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y / terrain.terrainData.size.y, spawnObject.position.z / terrain.terrainData.size.z);
+            treeInstance.position = normalizedPosition;
             treeInstance.rotation = spawnObject.rotation * Mathf.Deg2Rad;
 
             treeInstance.color = Color.white;
             treeInstance.lightmapColor = Color.white;
 
             treeInstanceCollection.Add(treeInstance);
+
+            ClearCircularArea(terrain, spawnObject.position, treesData.freeRadius);
 
 #if UNITY_EDITOR
             count++;
@@ -477,8 +504,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         }
 
-        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
-        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
+        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
+        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
 
         terrain.Flush();
     }
@@ -515,7 +542,15 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                     control++;
                     continue;
                 }
-                
+                /*
+                //  Check trees overlaps
+                if (CheckPositionOverlap(treesList, objectsData, position))
+                {
+                    control++;
+                    continue;
+                }
+                */
+
                 if (Random.value > objectsData.presence)
                 {
                     control++;
@@ -771,7 +806,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     }
 
 
-
+    /*
 
     private UTHit CheckAt(Vector3 position, out float height, out Vector3 normal, out GameObject hitGameObject)
     {
@@ -816,17 +851,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 return UTHit.TERRAIN_HIT;
             }
-            /*
-            else
-            {
-                return PSHit.UNKNOWN_HIT;
-            }
-            */
         }
 
         return UTHit.NO_HIT;
     }
+*/
 
+    /*
     private bool GetItemPosition(Vector3 centerGroup, float xMin, float zMin, float xMax, float zMax, float groupRadius, float maxSlope, float minAltitude, float maxAltitude, float freeRadius, int maxTries, out Vector3 position)
     {
         position = Vector3.zero;
@@ -846,7 +877,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
 
         return validPosition;
-    }
+    }*/
 
     private Vector3 GetPositionInGroup(Vector3 centerGroup, float groupRadius)
     {
@@ -861,6 +892,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         return position;
     }
 
+    /*
     private bool CheckValidPosition(Vector3 position, float maxSlope, float minAltitude, float maxAltitude, out float height)
     {
         height = 0;
@@ -900,12 +932,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             //Debug.Log(position);
             return false;
         }
-        /*
-                if (CheckPlaceholderAt(position))
-                {
-                    return false;
-                }
-        */
+        
+         //       if (CheckPlaceholderAt(position))
+         //       {
+         //           return false;
+         //       }
+        
         //  Check max slope
         if (Vector3.Angle(Vector3.up, normal) > maxSlope)
         {
@@ -916,18 +948,18 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         {
             return false;
         }
-        /*
-                if (clearGrass)
-                {
-                    //  If overlaps any grass remove the grass
-                    CleanGrassInArea(position, freeRadius);
-                }
-        */
+
+        //        if (clearGrass)
+        //{
+        //  If overlaps any grass remove the grass
+        //CleanGrassInArea(position, freeRadius);
+        //}
+
         //  Return the position
         return true;
 
     }
-
+    */
 
 
     private bool CheckOverlap(Vector3 position, float freeRadius)
@@ -1028,6 +1060,133 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         return false;
     }
+
+
+    private UTHit CheckAt(Vector3 position, out float height, out Vector3 normal, out GameObject hitGameObject)
+    {
+        hitGameObject = null;
+        height = -1;
+        normal = Vector3.zero;
+
+        position.y = 10000f;
+
+        Ray ray = new Ray(position, Vector3.down);
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~terrainIgnoreLayers))
+
+        {
+            hitGameObject = hit.collider.gameObject;
+            //Debug.Log("Hit object : " + hit.collider.gameObject.name + " with layer : " + LayerMask.LayerToName(hit.collider.gameObject.layer));
+
+            if (LayerMask.LayerToName(hit.collider.gameObject.layer).Equals("Terrain"))
+            {
+                height = hit.point.y;
+                normal = hit.normal;
+
+                return UTHit.TERRAIN_HIT;
+            }
+            else
+            {
+                return UTHit.UNKNOWN_HIT;
+            }
+        }
+
+        return UTHit.NO_HIT;
+    }
+
+    private bool CheckValidPosition(Terrain terrain, Vector3 position, UTSpawnData spawnData, out float height)
+    {
+        height = 0;
+
+        //  Check values are in terrain boundaries
+        if ((position.x < terrain.terrainData.bounds.min.x) ||
+            (position.x > terrain.terrainData.bounds.max.x) ||
+            (position.z < terrain.terrainData.bounds.min.z) ||
+            (position.z > terrain.terrainData.bounds.max.z))
+        {
+            //Debug.Log(position);
+            return false;
+        }
+
+        Vector3 normal;
+        GameObject hitGameObject;
+
+        UTHit psHit = CheckAt(position, out height, out normal, out hitGameObject);
+
+        //  Check if the position is directly over terrain
+        if (psHit != UTHit.TERRAIN_HIT)
+        {
+            //Debug.Log("Not Terrain Hit " + hitGameObject.name);
+            return false;
+        }
+        position.y = height;
+
+        //  Check Min and Max Altitude
+        if (height < spawnData.minAltitude || height > spawnData.maxAltitude)
+        {
+            //Debug.Log(height);
+            //Debug.Log(position);
+            return false;
+        }
+
+        //  Check max slope
+        float stepness = UTTerrainUtils.GetStepness(terrain, position);
+        if (stepness > spawnData.maxSlope)
+        {
+            //Debug.Log(steepness);
+            //Debug.Log("rejected by steepness");
+            return false;
+        }
+
+        //  Return a valid position
+        return true;
+
+    }
+
+
+    private void ClearArea(Terrain terrain, Vector3 center, float width, float height)
+    {
+    }
+
+    private void ClearCircularArea (Terrain terrain, Vector3 position, float radius) {
+
+        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
+        
+        for (int i = 0; i < details.Length; i++)
+        {
+            int[,] map = terrain.terrainData.GetDetailLayer(0, 0, terrain.terrainData.detailWidth, terrain.terrainData.detailHeight, i);
+
+            Vector2Int detailSpaceCenter = new Vector2Int(
+                (int)(position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z),
+                (int)(position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x));
+
+            int detailSpaceRadius = (int)(radius * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x);
+
+            for (int x = detailSpaceCenter.x - detailSpaceRadius; x < detailSpaceCenter.x + detailSpaceRadius; x++)
+            {
+                for (int y = detailSpaceCenter.y - detailSpaceRadius; y < detailSpaceCenter.y + detailSpaceRadius; y++)
+                {
+
+                    if (x < 0 ||
+                        x >= terrain.terrainData.detailWidth ||
+                        y < 0 ||
+                        y >= terrain.terrainData.detailHeight) {
+                        continue;
+                    }
+
+                    if (Vector2Int.Distance(new Vector2Int(x, y), detailSpaceCenter) <= detailSpaceRadius)
+                    {
+                        map[x, y] = 0;
+                    }
+                }
+            }
+
+            terrain.terrainData.SetDetailLayer(0, 0, i, map);
+        }
+    }
+
 
 }
 

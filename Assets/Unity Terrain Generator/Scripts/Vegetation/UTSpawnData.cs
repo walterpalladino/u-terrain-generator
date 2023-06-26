@@ -36,5 +36,6 @@ public class UTSpawnData
     public int maxQuantity = 1000;
     [Range(0.0f, 0.5f)]
     public float sizeVariation = 0.0f;
-
+    [Tooltip("Sunks the bottom of the tree. usefull for some meshes ending on flat bottoms.")]
+    public float sinkBottom = 0.0f;
 }
