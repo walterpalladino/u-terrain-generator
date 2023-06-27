@@ -251,19 +251,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2e5d392bfb1c424c912102c8af3f3d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  treesData:
+  treesSpawnData:
     enabled: 1
-    prefabsIds: 0000000001000000020000000300000004000000
-    presence: 0.1
-    groupSize: 5
-    groupRadius: 5
-    freeRadius: 2
-    maxSlope: 20
-    minAltitude: -0.1
-    maxAltitude: 100
-    maxQuantity: 10000
-    sizeVariation: 0
-    sinkBottom: 0
+    presence: 0.5
+    maxQuantity: 1000
+    treeTemplates: []
   bushesData:
     enabled: 0
     prefabsIds: 
@@ -666,9 +658,9 @@ MonoBehaviour:
     overlap: 0.25
     texture: {fileID: 2800000, guid: 922b2f4389cf30f46ad4dd56df061162, type: 3}
     bump: {fileID: 2800000, guid: 30b25325c708fc342ab5de0df5b1fff3, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 8, y: 8}
   - valid: 1
     textureIndex: 1
     startHeight: 5
@@ -676,9 +668,9 @@ MonoBehaviour:
     overlap: 0.25
     texture: {fileID: 2800000, guid: 5c38e2edb8ae412468d3186b2e38caf1, type: 3}
     bump: {fileID: 2800000, guid: 32e75137122e86e419af0c829889e58c, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 8, y: 8}
   - valid: 1
     textureIndex: 2
     startHeight: 10
@@ -686,9 +678,9 @@ MonoBehaviour:
     overlap: 2
     texture: {fileID: 2800000, guid: 1d2634ee9f36b834980539d2a726ef75, type: 3}
     bump: {fileID: 2800000, guid: 0f84519bcde78484388818cad0da1439, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 8, y: 8}
   - valid: 1
     textureIndex: 3
     startHeight: 18
@@ -696,9 +688,9 @@ MonoBehaviour:
     overlap: 2
     texture: {fileID: 2800000, guid: aae5d0c409b2960409c4797c4932938b, type: 3}
     bump: {fileID: 2800000, guid: 348ff04e4c4973e4fb7f88b376262aee, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 8, y: 8}
   - valid: 1
     textureIndex: 4
     startHeight: 32
@@ -706,9 +698,9 @@ MonoBehaviour:
     overlap: 0
     texture: {fileID: 2800000, guid: c2e975e8a074dff45aee75e580a54344, type: 3}
     bump: {fileID: 2800000, guid: 48c3f9bf0c6c95b4e8a00c6b9a8162be, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 8, y: 8}
   cliffs:
     enabled: 1
     textureIndex: 5
@@ -716,7 +708,7 @@ MonoBehaviour:
     overlap: 0.25
     texture: {fileID: 2800000, guid: 097d970815a3bf44c83b5d182280ea39, type: 3}
     bump: {fileID: 2800000, guid: 6aae0f592807068499eb683d55806674, type: 3}
-    bumpStrength: 1
+    bumpStrength: 2
     tileOffset: {x: 0, y: 0}
     tileSize: {x: 5, y: 5}
   stain:
@@ -745,19 +737,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2e5d392bfb1c424c912102c8af3f3d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  treesData:
+  treesSpawnData:
     enabled: 1
-    prefabsIds: 0000000001000000020000000300000004000000
-    presence: 0.5
-    groupSize: 10
-    groupRadius: 15
-    freeRadius: 3
-    maxSlope: 30
-    minAltitude: 10
-    maxAltitude: 100
-    maxQuantity: 166666
-    sizeVariation: 0.5
-    sinkBottom: 0.25
+    presence: 0.6
+    maxQuantity: 150000
+    treeTemplates:
+    - mesh: {fileID: 100000, guid: 02e48269f8d554fbca75435761452392, type: 3}
+      prefabId: 0
+      groupSize: 5
+      groupRadius: 15
+      freeRadius: 3
+      maxSlope: 30
+      minAltitude: 8
+      maxAltitude: 20
+      sizeVariation: 0.5
+      sinkBottom: 0.25
+    - mesh: {fileID: -927199367670048503, guid: 10337ad1bd11abca11002b7b44295342, type: 3}
+      prefabId: 1
+      groupSize: 10
+      groupRadius: 15
+      freeRadius: 3
+      maxSlope: 30
+      minAltitude: 15
+      maxAltitude: 100
+      sizeVariation: 0.5
+      sinkBottom: 0.25
+    - mesh: {fileID: -927199367670048503, guid: 43202a31bd1113061100b7a844295342, type: 3}
+      prefabId: 2
+      groupSize: 10
+      groupRadius: 15
+      freeRadius: 3
+      maxSlope: 30
+      minAltitude: 10
+      maxAltitude: 100
+      sizeVariation: 0.5
+      sinkBottom: 0.25
+    - mesh: {fileID: -927199367670048503, guid: 8d302a31bd1113061100b7a844295342, type: 3}
+      prefabId: 3
+      groupSize: 10
+      groupRadius: 15
+      freeRadius: 3
+      maxSlope: 30
+      minAltitude: 10
+      maxAltitude: 100
+      sizeVariation: 0.5
+      sinkBottom: 0.25
+    - mesh: {fileID: -927199367670048503, guid: 0f362a31bd1113061100b7a844295342, type: 3}
+      prefabId: 4
+      groupSize: 10
+      groupRadius: 15
+      freeRadius: 3
+      maxSlope: 30
+      minAltitude: 10
+      maxAltitude: 100
+      sizeVariation: 0.5
+      sinkBottom: 0.25
   bushesData:
     enabled: 0
     prefabsIds: 
