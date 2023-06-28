@@ -11,7 +11,7 @@ public class UTRocksData
     public float presence = 0.5f;
     [HideInInspector]
     public int maxQuantity = 1000;
-    public UTRockTemplate[] rocksTemplates;
+    public UTRockTemplate[] templates;
     [Range(1, 10)]
     public int groupSize = 1;
     [Range(1.0f, 15.0f)]

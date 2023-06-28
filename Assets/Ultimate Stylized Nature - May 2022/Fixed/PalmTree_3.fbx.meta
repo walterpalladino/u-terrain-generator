@@ -3,7 +3,17 @@ guid: aff1c6de4c9d744cfbef9daab990863f
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PalmTree_Leaves
+    second: {fileID: 2100000, guid: 25bae92b933ff4991aa6b30686ee88c8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PalmTree_Trunk
+    second: {fileID: 2100000, guid: 471ecfdbeb5914f8a89eb889f8cff71f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -88,7 +98,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.02
+    globalScale: 2
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

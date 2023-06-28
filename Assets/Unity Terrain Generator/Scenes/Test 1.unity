@@ -273,7 +273,7 @@ MonoBehaviour:
     enabled: 1
     presence: 0.5
     maxQuantity: 1000
-    grassTemplates: []
+    templates: []
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
@@ -285,7 +285,7 @@ MonoBehaviour:
     enabled: 0
     presence: 0.5
     maxQuantity: 1000
-    rocksTemplates: []
+    templates: []
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
@@ -678,7 +678,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 0f84519bcde78484388818cad0da1439, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 4, y: 4}
   - valid: 1
     textureIndex: 3
     startHeight: 18
@@ -688,7 +688,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 348ff04e4c4973e4fb7f88b376262aee, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 4, y: 4}
   - valid: 1
     textureIndex: 4
     startHeight: 32
@@ -698,7 +698,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 48c3f9bf0c6c95b4e8a00c6b9a8162be, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 4, y: 4}
   cliffs:
     enabled: 1
     textureIndex: 5
@@ -737,8 +737,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   treesSpawnData:
     enabled: 1
-    presence: 1
-    maxQuantity: 250000
+    presence: 0.5
+    maxQuantity: 125000
     treeTemplates:
     - mesh: {fileID: 919132149155446097, guid: 27540e78f51b74b6c9be3a4c8ec0104f, type: 3}
       prefabId: 0
@@ -807,13 +807,15 @@ MonoBehaviour:
     enabled: 1
     presence: 1
     maxQuantity: 500000
-    grassTemplates:
-    - texture: {fileID: 2800000, guid: cf3069941001b5c46b1f13d4551d0fd9, type: 3}
+    templates:
+    - texture: {fileID: 2800000, guid: 91a1945982e98be4d9fe3e3d12fdebd8, type: 3}
       prefabId: 0
-    - texture: {fileID: 2800000, guid: 5599b9cdb141da043b88653e2270e2d7, type: 3}
+    - texture: {fileID: 2800000, guid: 5afd653e4d79b7a4c9523dd543c0bead, type: 3}
       prefabId: 1
-    - texture: {fileID: 2800000, guid: dcefc591c195a9f468e9157baa03eb4f, type: 3}
+    - texture: {fileID: 2800000, guid: 5733619f617fd954cac22d3d11fd1b93, type: 3}
       prefabId: 2
+    - texture: {fileID: 2800000, guid: cf3069941001b5c46b1f13d4551d0fd9, type: 3}
+      prefabId: 3
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
@@ -823,11 +825,13 @@ MonoBehaviour:
     sizeVariation: 0
   rocksData:
     enabled: 1
-    presence: 0.5
+    presence: 0.1
     maxQuantity: 1000
-    rocksTemplates:
+    templates:
     - mesh: {fileID: 919132149155446097, guid: 71a246af4bc894d0cac900533dd76f0a, type: 3}
-      prefabId: 3
+      prefabId: 4
+    - mesh: {fileID: 919132149155446097, guid: a714e37c469b74742967bb4186d572e3, type: 3}
+      prefabId: 5
     groupSize: 1
     groupRadius: 1
     freeRadius: 5

@@ -11,7 +11,7 @@ public class UTGrassData
     public float presence = 0.5f;
     [HideInInspector]
     public int maxQuantity = 1000;
-    public UTGrassTemplate[] grassTemplates;
+    public UTGrassTemplate[] templates;
     [Range(1, 10)]
     public int groupSize = 1;
     [Range(1.0f, 15.0f)]
