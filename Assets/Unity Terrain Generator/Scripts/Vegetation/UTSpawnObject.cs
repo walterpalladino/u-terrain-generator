@@ -5,6 +5,8 @@ using UnityEngine;
 public class UTSpawnObject 
 {
     public int prefabIndex = 0;
+    public Texture2D texture = null;
+    public GameObject mesh = null;
     public Vector3 position = Vector3.zero;
     public float scale = 1.0f;
     public float rotation = 0.0f;

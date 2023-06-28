@@ -271,30 +271,28 @@ MonoBehaviour:
     sinkBottom: 0
   grassData:
     enabled: 1
-    prefabsIds: 
     presence: 0.5
+    maxQuantity: 1000
+    grassTemplates: []
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
     maxSlope: 20
     minAltitude: 0
     maxAltitude: 100
-    maxQuantity: 1000
     sizeVariation: 0
-    sinkBottom: 0
   rocksData:
     enabled: 0
-    prefabsIds: 
     presence: 0.5
+    maxQuantity: 1000
+    rocksTemplates: []
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
     maxSlope: 20
     minAltitude: 0
     maxAltitude: 100
-    maxQuantity: 1000
     sizeVariation: 0
-    sinkBottom: 0
   randomSeed: 0
   maxTriesToLocateObjects: 3
   terrainTileSize: 50
@@ -548,7 +546,7 @@ Terrain:
   serializedVersion: 6
   m_TerrainData: {fileID: 15600000, guid: 01a68f33dddee46c9a2dc2edd7bf5310, type: 2}
   m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
+  m_TreeBillboardDistance: 250
   m_TreeCrossFadeLength: 5
   m_TreeMaximumFullLODCount: 50
   m_DetailObjectDistance: 50
@@ -660,7 +658,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 30b25325c708fc342ab5de0df5b1fff3, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 8, y: 8}
+    tileSize: {x: 5, y: 5}
   - valid: 1
     textureIndex: 1
     startHeight: 5
@@ -670,7 +668,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 32e75137122e86e419af0c829889e58c, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 8, y: 8}
+    tileSize: {x: 5, y: 5}
   - valid: 1
     textureIndex: 2
     startHeight: 10
@@ -680,7 +678,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 0f84519bcde78484388818cad0da1439, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 8, y: 8}
+    tileSize: {x: 5, y: 5}
   - valid: 1
     textureIndex: 3
     startHeight: 18
@@ -690,7 +688,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 348ff04e4c4973e4fb7f88b376262aee, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 8, y: 8}
+    tileSize: {x: 5, y: 5}
   - valid: 1
     textureIndex: 4
     startHeight: 32
@@ -700,7 +698,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 48c3f9bf0c6c95b4e8a00c6b9a8162be, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 8, y: 8}
+    tileSize: {x: 5, y: 5}
   cliffs:
     enabled: 1
     textureIndex: 5
@@ -739,10 +737,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   treesSpawnData:
     enabled: 1
-    presence: 0.6
-    maxQuantity: 150000
+    presence: 1
+    maxQuantity: 250000
     treeTemplates:
-    - mesh: {fileID: 100000, guid: 02e48269f8d554fbca75435761452392, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: 27540e78f51b74b6c9be3a4c8ec0104f, type: 3}
       prefabId: 0
       groupSize: 5
       groupRadius: 15
@@ -752,7 +750,7 @@ MonoBehaviour:
       maxAltitude: 20
       sizeVariation: 0.5
       sinkBottom: 0.25
-    - mesh: {fileID: -927199367670048503, guid: 10337ad1bd11abca11002b7b44295342, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: 1bff90f57f6d54c36991aa3731ec24f6, type: 3}
       prefabId: 1
       groupSize: 10
       groupRadius: 15
@@ -762,7 +760,7 @@ MonoBehaviour:
       maxAltitude: 100
       sizeVariation: 0.5
       sinkBottom: 0.25
-    - mesh: {fileID: -927199367670048503, guid: 43202a31bd1113061100b7a844295342, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: 5db81b6858e584a1b968c4f5cd3389f7, type: 3}
       prefabId: 2
       groupSize: 10
       groupRadius: 15
@@ -772,7 +770,7 @@ MonoBehaviour:
       maxAltitude: 100
       sizeVariation: 0.5
       sinkBottom: 0.25
-    - mesh: {fileID: -927199367670048503, guid: 8d302a31bd1113061100b7a844295342, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: 7c3103b81d1f64ecca626095f955dfcb, type: 3}
       prefabId: 3
       groupSize: 10
       groupRadius: 15
@@ -782,7 +780,7 @@ MonoBehaviour:
       maxAltitude: 100
       sizeVariation: 0.5
       sinkBottom: 0.25
-    - mesh: {fileID: -927199367670048503, guid: 0f362a31bd1113061100b7a844295342, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: a844ea19ce22f42d68649d5a26f02a86, type: 3}
       prefabId: 4
       groupSize: 10
       groupRadius: 15
@@ -807,30 +805,36 @@ MonoBehaviour:
     sinkBottom: 0
   grassData:
     enabled: 1
-    prefabsIds: 000000000100000002000000
     presence: 1
+    maxQuantity: 500000
+    grassTemplates:
+    - texture: {fileID: 2800000, guid: cf3069941001b5c46b1f13d4551d0fd9, type: 3}
+      prefabId: 0
+    - texture: {fileID: 2800000, guid: 5599b9cdb141da043b88653e2270e2d7, type: 3}
+      prefabId: 1
+    - texture: {fileID: 2800000, guid: dcefc591c195a9f468e9157baa03eb4f, type: 3}
+      prefabId: 2
     groupSize: 1
     groupRadius: 1
     freeRadius: 0.5
     maxSlope: 60
     minAltitude: 7
     maxAltitude: 50
-    maxQuantity: 500000
     sizeVariation: 0
-    sinkBottom: 0
   rocksData:
     enabled: 1
-    prefabsIds: 03000000
     presence: 0.5
+    maxQuantity: 1000
+    rocksTemplates:
+    - mesh: {fileID: 919132149155446097, guid: 71a246af4bc894d0cac900533dd76f0a, type: 3}
+      prefabId: 3
     groupSize: 1
     groupRadius: 1
     freeRadius: 5
     maxSlope: 20
     minAltitude: 6
     maxAltitude: 100
-    maxQuantity: 1000
     sizeVariation: 0
-    sinkBottom: 0
   randomSeed: 0
   maxTriesToLocateObjects: 3
   terrainTileSize: 50
@@ -1019,8 +1023,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1291578572}
-  m_LocalRotation: {x: -0.053903002, y: 0.33989316, z: -0.019337436, w: -0.9387189}
-  m_LocalPosition: {x: 511.5139, y: 11.145277, z: 91.44655}
+  m_LocalRotation: {x: -0.008517825, y: 0.22164951, z: 0.00179079, w: 0.9750876}
+  m_LocalPosition: {x: 118.40253, y: 15.765302, z: 256.49194}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
