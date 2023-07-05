@@ -123,7 +123,6 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
     float softExp = 1.0f;
 
 
-
     private Terrain terrain;
     //private float[,,] splatmapData;
 
@@ -195,6 +194,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 #endif
         terrain = GetComponent<Terrain>();
         terrain.terrainData = GenerateTerrain(terrain.terrainData);
+
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
@@ -221,6 +221,10 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
             UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "Aplying filters...", 0.20f);
         }
 #endif
+
+
+
+
         //  Apply noise reduction if required
         for (int f = 0; f < filterQty; f++)
         {
