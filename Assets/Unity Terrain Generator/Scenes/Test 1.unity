@@ -927,25 +927,17 @@ MonoBehaviour:
     presence: 0.5
     maxQuantity: 1000
     templates: []
-    groupSize: 1
-    groupRadius: 1
-    freeRadius: 0.5
     maxSlope: 20
     minAltitude: 0
     maxAltitude: 100
-    sizeVariation: 0
   grassData:
     enabled: 1
     presence: 0.5
     maxQuantity: 1000
     templates: []
-    groupSize: 1
-    groupRadius: 1
-    freeRadius: 0.5
     maxSlope: 20
     minAltitude: 0
     maxAltitude: 100
-    sizeVariation: 0
   rocksData:
     enabled: 0
     presence: 0.5
@@ -957,9 +949,7 @@ MonoBehaviour:
     maxSlope: 20
     minAltitude: 0
     maxAltitude: 100
-    sizeVariation: 0
   randomSeed: 0
-  freeBorderSize: 0
   terrainIgnoreLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1288,24 +1278,24 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 1.0443189
-      outSlope: 1.0443189
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.06846771
-      value: 0.07150212
-      inSlope: 3.3506105
-      outSlope: 3.3506105
+      inSlope: 0.034305315
+      outSlope: 0.034305315
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.20887277
+      inWeight: 0
+      outWeight: 0.657157
+    - serializedVersion: 3
+      time: 0.27680355
+      value: 0.11869669
+      inSlope: 0.89523005
+      outSlope: 0.89523005
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.20344603
       outWeight: 0.47304568
     - serializedVersion: 3
-      time: 0.6750635
-      value: 0.6852782
+      time: 0.50839174
+      value: 0.6499083
       inSlope: 2.1226397
       outSlope: 2.1226397
       tangentMode: 0
@@ -1315,11 +1305,11 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0.032039944
-      outSlope: 0.032039944
+      inSlope: 0.02478993
+      outSlope: 0.02478993
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.57618093
+      inWeight: 1
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -1334,7 +1324,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 30b25325c708fc342ab5de0df5b1fff3, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 4, y: 4}
   - valid: 1
     textureIndex: 1
     startHeight: 5
@@ -1344,7 +1334,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 32e75137122e86e419af0c829889e58c, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 5, y: 5}
+    tileSize: {x: 4, y: 4}
   - valid: 1
     textureIndex: 2
     startHeight: 10
@@ -1354,7 +1344,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 0f84519bcde78484388818cad0da1439, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 4, y: 4}
+    tileSize: {x: 3, y: 3}
   - valid: 1
     textureIndex: 3
     startHeight: 18
@@ -1364,7 +1354,7 @@ MonoBehaviour:
     bump: {fileID: 2800000, guid: 348ff04e4c4973e4fb7f88b376262aee, type: 3}
     bumpStrength: 2
     tileOffset: {x: 0, y: 0}
-    tileSize: {x: 4, y: 4}
+    tileSize: {x: 3, y: 3}
   - valid: 1
     textureIndex: 4
     startHeight: 32
@@ -1397,7 +1387,7 @@ MonoBehaviour:
   filterQty: 0
   filterWeight: 0.01
   createTerraces: 0
-  terraces: 8
+  terraces: 12
   softExp: 1.59
 --- !u!114 &498462307
 MonoBehaviour:
@@ -1413,10 +1403,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   treesSpawnData:
     enabled: 1
-    presence: 1
-    maxQuantity: 250000
+    presence: 0.3
+    maxQuantity: 75000
     treeTemplates:
     - mesh: {fileID: 919132149155446097, guid: 27540e78f51b74b6c9be3a4c8ec0104f, type: 3}
+      color1: {r: 1, g: 1, b: 1, a: 1}
+      color2: {r: 0.7002028, g: 0.735849, b: 0.57965463, a: 1}
       prefabId: 0
       groupSize: 5
       groupRadius: 10
@@ -1427,6 +1419,8 @@ MonoBehaviour:
       sizeVariation: 0.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 1bff90f57f6d54c36991aa3731ec24f6, type: 3}
+      color1: {r: 1, g: 1, b: 1, a: 1}
+      color2: {r: 0.63005143, g: 0.6792453, b: 0.41331437, a: 1}
       prefabId: 1
       groupSize: 5
       groupRadius: 10
@@ -1437,6 +1431,8 @@ MonoBehaviour:
       sizeVariation: 0.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 5db81b6858e584a1b968c4f5cd3389f7, type: 3}
+      color1: {r: 1, g: 1, b: 1, a: 1}
+      color2: {r: 0.7075472, g: 0.3316797, b: 0.09011214, a: 1}
       prefabId: 2
       groupSize: 5
       groupRadius: 10
@@ -1447,6 +1443,8 @@ MonoBehaviour:
       sizeVariation: 0.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 7c3103b81d1f64ecca626095f955dfcb, type: 3}
+      color1: {r: 1, g: 1, b: 1, a: 1}
+      color2: {r: 0.8666667, g: 0.4513132, b: 0.34901965, a: 1}
       prefabId: 3
       groupSize: 5
       groupRadius: 10
@@ -1457,6 +1455,8 @@ MonoBehaviour:
       sizeVariation: 0.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: a844ea19ce22f42d68649d5a26f02a86, type: 3}
+      color1: {r: 1, g: 1, b: 1, a: 1}
+      color2: {r: 0.6981132, g: 0.31166956, b: 0.10866857, a: 1}
       prefabId: 4
       groupSize: 5
       groupRadius: 10
@@ -1468,66 +1468,96 @@ MonoBehaviour:
       sinkBottom: 0.25
   bushesData:
     enabled: 1
-    presence: 0.5
+    presence: 1
     maxQuantity: 1000
     templates:
     - mesh: {fileID: 919132149155446097, guid: 1d65d21f6a3b842fe8e7b9dd3132a6e2, type: 3}
-      prefabId: 0
+      minSize: 1
+      maxSize: 2
+      useGpuInstancing: 1
+      prefabId: 4
     - mesh: {fileID: 919132149155446097, guid: e324d8e01aa8545338ef9aa77727abb3, type: 3}
-      prefabId: 0
+      minSize: 1
+      maxSize: 2
+      useGpuInstancing: 1
+      prefabId: 5
     - mesh: {fileID: 919132149155446097, guid: 9e96cf2ab6b794a4aa08bff68815ebe4, type: 3}
-      prefabId: 0
-    groupSize: 1
-    groupRadius: 2.92
-    freeRadius: 0.5
-    maxSlope: 20
-    minAltitude: 0
+      minSize: 1
+      maxSize: 2
+      useGpuInstancing: 1
+      prefabId: 6
+    maxSlope: 40
+    minAltitude: 8
     maxAltitude: 100
-    sizeVariation: 0
   grassData:
     enabled: 1
     presence: 1
     maxQuantity: 500000
     templates:
     - texture: {fileID: 2800000, guid: 91a1945982e98be4d9fe3e3d12fdebd8, type: 3}
+      healthyColor: {r: 1, g: 1, b: 1, a: 1}
+      dryColor: {r: 0.34591067, g: 0.36862746, b: 0.0980392, a: 1}
+      minSize: 1
+      maxSize: 2
       prefabId: 0
     - texture: {fileID: 2800000, guid: 5afd653e4d79b7a4c9523dd543c0bead, type: 3}
+      healthyColor: {r: 1, g: 1, b: 1, a: 1}
+      dryColor: {r: 0.34901962, g: 0.36862746, b: 0.09803922, a: 1}
+      minSize: 1
+      maxSize: 2
       prefabId: 1
     - texture: {fileID: 2800000, guid: 5733619f617fd954cac22d3d11fd1b93, type: 3}
+      healthyColor: {r: 1, g: 1, b: 1, a: 1}
+      dryColor: {r: 0.34901962, g: 0.36862746, b: 0.09803922, a: 1}
+      minSize: 1
+      maxSize: 2
       prefabId: 2
     - texture: {fileID: 2800000, guid: cf3069941001b5c46b1f13d4551d0fd9, type: 3}
+      healthyColor: {r: 1, g: 1, b: 1, a: 1}
+      dryColor: {r: 0.34901962, g: 0.36862746, b: 0.09803922, a: 1}
+      minSize: 1
+      maxSize: 2
       prefabId: 3
-    groupSize: 1
-    groupRadius: 1
-    freeRadius: 0.5
     maxSlope: 60
     minAltitude: 7
     maxAltitude: 50
-    sizeVariation: 0
   rocksData:
     enabled: 1
-    presence: 0.2
+    presence: 0.4
     maxQuantity: 1000
     templates:
     - mesh: {fileID: 919132149155446097, guid: 71a246af4bc894d0cac900533dd76f0a, type: 3}
-      prefabId: 4
-    - mesh: {fileID: 919132149155446097, guid: bbe969dc56f84499cbe00787bf296a3a, type: 3}
-      prefabId: 5
-    - mesh: {fileID: 919132149155446097, guid: a714e37c469b74742967bb4186d572e3, type: 3}
-      prefabId: 6
-    - mesh: {fileID: 919132149155446097, guid: 36bc825e438e8449fb77a494d20dfc44, type: 3}
+      minSize: 0.5
+      maxSize: 1
+      useGpuInstancing: 1
       prefabId: 7
-    - mesh: {fileID: 919132149155446097, guid: 56504682834b948d4a0f49188fc89898, type: 3}
+    - mesh: {fileID: 919132149155446097, guid: bbe969dc56f84499cbe00787bf296a3a, type: 3}
+      minSize: 0.5
+      maxSize: 1
+      useGpuInstancing: 1
       prefabId: 8
-    groupSize: 1
-    groupRadius: 1
+    - mesh: {fileID: 919132149155446097, guid: a714e37c469b74742967bb4186d572e3, type: 3}
+      minSize: 0.5
+      maxSize: 1
+      useGpuInstancing: 1
+      prefabId: 9
+    - mesh: {fileID: 919132149155446097, guid: 36bc825e438e8449fb77a494d20dfc44, type: 3}
+      minSize: 0.5
+      maxSize: 1
+      useGpuInstancing: 1
+      prefabId: 10
+    - mesh: {fileID: 919132149155446097, guid: 56504682834b948d4a0f49188fc89898, type: 3}
+      minSize: 0.5
+      maxSize: 1
+      useGpuInstancing: 1
+      prefabId: 11
+    groupSize: 4
+    groupRadius: 2
     freeRadius: 5
-    maxSlope: 20
+    maxSlope: 40
     minAltitude: 6
     maxAltitude: 100
-    sizeVariation: 0
   randomSeed: 0
-  freeBorderSize: 0
   terrainIgnoreLayers:
     serializedVersion: 2
     m_Bits: 0

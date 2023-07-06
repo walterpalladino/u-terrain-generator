@@ -16,7 +16,27 @@ public class Bezier
     
     public Vector3 PointAt(float t)
     {
-        return PointAt(nodes[0], nodes[1], nodes[2], nodes[3], t);
+
+        if (nodes.Count == 0)
+        {
+            return Vector3.zero;
+        }
+        else if(nodes.Count == 1) {
+            return nodes[0];
+        }
+        else if (nodes.Count == 2)
+        {
+            return PointAt(nodes[0], nodes[1], t);
+        }
+        else if (nodes.Count == 3)
+        {
+            return PointAt(nodes[0], nodes[1], nodes[2], t);
+        }
+        else
+        {
+            return PointAt(nodes[0], nodes[1], nodes[2], nodes[3], t);
+        }
+
     }
     
     /*

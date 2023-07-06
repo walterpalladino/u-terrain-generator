@@ -25,8 +25,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     [Header("Tree Settings")]
     [SerializeField]
     private UTTreesData treesSpawnData;
-    //[SerializeField]
-    //private UTSpawnData treesData;
 
     [Header("Bushes Settings")]
     [SerializeField]
@@ -41,9 +39,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     private UTRocksData rocksData;
 
 
-    [Header("Random Settings")]
-    [SerializeField]
-    private int randomSeed = 0;
+
+    [Header("General Settings")]
+    [SerializeField] int randomSeed = 0;
+    [SerializeField] LayerMask terrainIgnoreLayers;
+
 
 
 
@@ -54,12 +54,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
 
     Terrain terrain;
-
-
-    [SerializeField] float freeBorderSize;
-
-    [SerializeField] LayerMask terrainIgnoreLayers;
-
 
 
 
@@ -93,12 +87,14 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         bushesList = new List<UTSpawnObject>();
         grassList = new List<UTSpawnObject>();
 
-        CollectTerrain();
-
         //  Clear all Rocks, Grass
         UTTerrainUtils.ClearAllDetailLayers(terrain);
 
-        SpawnObjects();
+        UpdateTreesTemplates(terrain);
+        UpdateDetailTemplates(terrain);
+
+        PlaceTerrainObjects(terrain);
+
 
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
@@ -111,7 +107,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Clear Vegetation", "Working...", 0.0f);
 #endif
 
-        CollectTerrain();
         InitData();
 
 #if UNITY_EDITOR
@@ -131,21 +126,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 #endif
 
     }
-    
+
 
     private void InitData()
     {
-
+        terrain = GetComponent<Terrain>();
         terrain.gameObject.layer = LayerMask.NameToLayer("Terrain");
-
-        //treesData.spawnDataType = UTSpawnDataType.Tree;
-        //treesData.layerName = "Trees";
-
-//        grassData.spawnDataType = UTSpawnDataType.GrassTexture;
-//        grassData.layerName = "Grass";
-
-        //rocksData.spawnDataType = UTSpawnDataType.DetailMesh;
-        //rocksData.layerName = "Rocks";
     }
 
 
@@ -173,82 +159,20 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         //UTLayerUtils.CreateLayer("Special Area", 22);
     }
 
-    //  TODO : Check if boundary changes when changing the terrain position
-    private void CollectTerrain()
+
+    private void UpdateDetailTemplates(Terrain terrain)
     {
-        terrain = GetComponent<Terrain>();
-    }
-
-
-    private void SpawnObjects()
-    {
-
-        /*
-        Vector3 terrainMin = terrain.terrainData.bounds.min;
-        Vector3 terrainMax = terrain.terrainData.bounds.max;
-
-        terrainMin.y = 0;
-        terrainMax.y = terrain.terrainData.size.y;
-
-        Vector3 terrainSize = terrain.terrainData.size;
-
-        Vector3 terrainCenter = terrainSize / 2.0f;
-        terrainCenter += terrainMin;
-        */
-
-        UpdateDetailTemplates(terrain);
-
-        PlaceTerrainObjects(terrain);
-
-    }
-
-
-    
-
-    public void PlaceTerrainObjects(Terrain terrain)
-    {
-        Debug.Log("Placing objects on terrain : " + terrain.gameObject.name);
-
-        
-        //  Place Rocks
-        GenerateRocks(terrain, rocksData, ref rocksList);
-        Debug.Log("Rocks to instantiate : " + rocksList.Count);
-        Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
-        InstantiateRocksOnTerrain(terrain, rocksList);
-
-        //  Place Bushes
-        GenerateBushes(terrain, bushesData, ref bushesList);
-        Debug.Log("Bushes to instantiate : " + bushesList.Count);
-        Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
-        InstantiateBushesOnTerrain(terrain, rocksList);
-
-        //  Place Grass
-        GenerateGrass(terrain, grassData, ref grassList);
-        Debug.Log("Grass to instantiate : " + grassList.Count);
-        Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
-        InstantiateGrassOnTerrain(terrain, grassList);
-        
-
-        //  Place Trees
-        GenerateTrees(terrain, treesSpawnData, ref treesList);
-        Debug.Log("Trees to instantiate : " + treesList.Count);
-        InstantiateTreesOnTerrain(terrain, treesSpawnData, treesList);
-
-    }
-
-
-    private void UpdateDetailTemplates(Terrain terrain) {
 
         //  Add detail layers for: Grass, Rocks, Bushes
         //  Add grass layers
         //  Add rocks layers
         //  Add bushes layers
 
-        //Debug.Log(grassData.grassTemplates.Length + rocksData.rocksTemplates.Length);
         DetailPrototype[] detailPrototypes;
-        detailPrototypes = new DetailPrototype[grassData.templates.Length + rocksData.templates.Length];
+        detailPrototypes = new DetailPrototype[grassData.templates.Length + bushesData.templates.Length + rocksData.templates.Length];
         int idx = 0;
 
+        //  Grass
         for (int i = 0; i < grassData.templates.Length; i++)
         {
 
@@ -256,25 +180,98 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             detailPrototypes[idx].prototype = null;
             detailPrototypes[idx].usePrototypeMesh = false;
             detailPrototypes[idx].prototypeTexture = grassData.templates[i].texture;
+
+            detailPrototypes[idx].healthyColor = grassData.templates[i].healthyColor;
+            detailPrototypes[idx].dryColor = grassData.templates[i].dryColor;
+
             detailPrototypes[idx].renderMode = DetailRenderMode.GrassBillboard;
+
+            if (grassData.templates[i].minSize > grassData.templates[i].maxSize)
+            {
+                detailPrototypes[idx].minHeight = grassData.templates[i].minSize;
+                detailPrototypes[idx].minWidth = grassData.templates[i].minSize;
+
+                detailPrototypes[idx].maxHeight = grassData.templates[i].maxSize;
+                detailPrototypes[idx].maxWidth = grassData.templates[i].maxSize;
+            }
+            else
+            {
+                detailPrototypes[idx].minHeight = grassData.templates[i].maxSize;
+                detailPrototypes[idx].minWidth = grassData.templates[i].maxSize;
+
+                detailPrototypes[idx].maxHeight = grassData.templates[i].minSize;
+                detailPrototypes[idx].maxWidth = grassData.templates[i].minSize;
+            }
 
             grassData.templates[i].prefabId = idx;
 
             idx++;
         }
 
-        for (int i = 0; i < rocksData.templates.Length; i++)
+        //  Bushes
+        for (int i = 0; i < bushesData.templates.Length; i++)
         {
-            Debug.Log("Processing rocks : " + i + " idx : " + idx);
+            //Debug.Log("Processing rocks : " + i + " idx : " + idx);
             detailPrototypes[idx] = new DetailPrototype();
-            detailPrototypes[idx].prototype = rocksData.templates[i].mesh;
-
-            detailPrototypes[idx].healthyColor = Color.white;
-            detailPrototypes[idx].dryColor = Color.white;
+            detailPrototypes[idx].prototype = bushesData.templates[i].mesh;
 
             detailPrototypes[idx].usePrototypeMesh = true;
             detailPrototypes[idx].prototypeTexture = null;
+
+            detailPrototypes[idx].useInstancing = bushesData.templates[i].useGpuInstancing;
             detailPrototypes[idx].renderMode = DetailRenderMode.VertexLit;
+
+            if (rocksData.templates[i].minSize > bushesData.templates[i].maxSize)
+            {
+                detailPrototypes[idx].minHeight = bushesData.templates[i].minSize;
+                detailPrototypes[idx].minWidth = bushesData.templates[i].minSize;
+
+                detailPrototypes[idx].maxHeight = bushesData.templates[i].maxSize;
+                detailPrototypes[idx].maxWidth = bushesData.templates[i].maxSize;
+            }
+            else
+            {
+                detailPrototypes[idx].minHeight = bushesData.templates[i].maxSize;
+                detailPrototypes[idx].minWidth = bushesData.templates[i].maxSize;
+
+                detailPrototypes[idx].maxHeight = bushesData.templates[i].minSize;
+                detailPrototypes[idx].maxWidth = bushesData.templates[i].minSize;
+            }
+
+            bushesData.templates[i].prefabId = idx;
+
+            idx++;
+        }
+
+        //  Rocks
+        for (int i = 0; i < rocksData.templates.Length; i++)
+        {
+            //Debug.Log("Processing rocks : " + i + " idx : " + idx);
+            detailPrototypes[idx] = new DetailPrototype();
+            detailPrototypes[idx].prototype = rocksData.templates[i].mesh;
+
+            detailPrototypes[idx].usePrototypeMesh = true;
+            detailPrototypes[idx].prototypeTexture = null;
+
+            detailPrototypes[idx].useInstancing = rocksData.templates[i].useGpuInstancing;
+            detailPrototypes[idx].renderMode = DetailRenderMode.VertexLit;
+
+            if (rocksData.templates[i].minSize > rocksData.templates[i].maxSize)
+            {
+                detailPrototypes[idx].minHeight = rocksData.templates[i].minSize;
+                detailPrototypes[idx].minWidth = rocksData.templates[i].minSize;
+
+                detailPrototypes[idx].maxHeight = rocksData.templates[i].maxSize;
+                detailPrototypes[idx].maxWidth = rocksData.templates[i].maxSize;
+            }
+            else
+            {
+                detailPrototypes[idx].minHeight = rocksData.templates[i].maxSize;
+                detailPrototypes[idx].minWidth = rocksData.templates[i].maxSize;
+
+                detailPrototypes[idx].maxHeight = rocksData.templates[i].minSize;
+                detailPrototypes[idx].maxWidth = rocksData.templates[i].minSize;
+            }
 
             rocksData.templates[i].prefabId = idx;
 
@@ -283,12 +280,15 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         terrain.terrainData.detailPrototypes = detailPrototypes;
 
-        /*
-        //  Refresh terrain grass list
+    }
+
+    private void UpdateTreesTemplates(Terrain terrain)
+    {
+        //  Refresh terrain trees list
         TreePrototype[] newTreePrototypes;
-        newTreePrototypes = new TreePrototype[treesData.treeTemplates.Length];
+        newTreePrototypes = new TreePrototype[treesSpawnData.treeTemplates.Length];
         int tindex = 0;
-        foreach (UTTreeTemplate treeTemplate in treesData.treeTemplates)
+        foreach (UTTreeTemplate treeTemplate in treesSpawnData.treeTemplates)
         {
             newTreePrototypes[tindex] = new TreePrototype();
             newTreePrototypes[tindex].prefab = treeTemplate.mesh;
@@ -296,205 +296,125 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             tindex++;
         }
         terrain.terrainData.treePrototypes = newTreePrototypes;
-        */
+    }
+
+    public void PlaceTerrainObjects(Terrain terrain)
+    {
+        Debug.Log("Placing objects on terrain : " + terrain.gameObject.name);
+        Debug.Log("terrain.terrainData.detailWidth " + terrain.terrainData.detailWidth + " / terrain.terrainData.detailHeight " + terrain.terrainData.detailHeight);
+
+        //  Place Rocks
+        GenerateRocks(terrain, rocksData, ref rocksList);
+        Debug.Log("Rocks to instantiate : " + rocksList.Count);
+
+        //  Place Bushes
+        GenerateBushes(terrain, bushesData, ref bushesList);
+        Debug.Log("Bushes to instantiate : " + bushesList.Count);
+        
+        //  Place Grass
+        GenerateGrass(terrain, grassData, ref grassList);
+        Debug.Log("Grass to instantiate : " + grassList.Count);
+
+        List<UTSpawnObject> objects = new List<UTSpawnObject>(rocksList);
+        objects.AddRange(new List<UTSpawnObject>(grassList));
+        objects.AddRange(new List<UTSpawnObject>(bushesList));
+
+        //  Grass, Rocks, Bushes
+        InstantiateDetailMeshesOnTerrain(terrain, objects);
+
+        //  Place Trees
+        GenerateTrees(terrain, treesSpawnData, ref treesList);
+        Debug.Log("Trees to instantiate : " + treesList.Count);
+        InstantiateTreesOnTerrain(terrain, treesList);
 
     }
 
 
-    private void InstantiateGrassOnTerrain(Terrain terrain, List<UTSpawnObject> grassList)
-    {
 
+
+    
+    private void InstantiateDetailMeshesOnTerrain(Terrain terrain, List<UTSpawnObject> objectsList) {
 
 #if UNITY_EDITOR
         int count = 0;
 #endif
 
         DetailPrototype[] details = terrain.terrainData.detailPrototypes;
-        //Debug.Log("Found details numbers: " + details.Length);
+
         for (int i = 0; i < details.Length; i++)
-        //foreach(DetailPrototype detail in details)
         {
-            //Debug.Log("Processing details : " + i);
-
             DetailPrototype detail = details[i];
-            if (detail.renderMode == DetailRenderMode.GrassBillboard)
+
+            int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
+            //int[,] map = terrain.terrainData.GetDetailLayer(0, 0, terrain.terrainData.detailWidth, terrain.terrainData.detailHeight, i);
+
+            foreach (UTSpawnObject spawnObject in objectsList)
             {
-
-                int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
-                foreach (UTSpawnObject spawnObject in grassList)
+                if (spawnObject.prefabIndex == i)
                 {
+                    float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
+                    float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
 
-                    if (spawnObject.prefabIndex == i)
-                    {
-
-                        float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
-                        float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
-
-                        map[(int)z, (int)x] = 1;
+                    map[(int)z, (int)x] = 1;
 
 #if UNITY_EDITOR
-                        count++;
-                        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Grass...", $"Grass {count} of {grassList.Count} Instantiated.", (float)count / (float)treesList.Count);
+                    count++;
+                    UnityEditor.EditorUtility.DisplayCancelableProgressBar("Instantiating Details...", $"Added {count} of {objectsList.Count}.", (float)count / (float)objectsList.Count);
 #endif
 
-                    }
-
                 }
-
-                terrain.terrainData.SetDetailLayer(0, 0, i, map);
-
             }
+            terrain.terrainData.SetDetailLayer(0, 0, i, map);
         }
-
-
     }
+    
 
-    /*
-    private void InstantiateGrassOnTerrain(Terrain terrain, List<UTSpawnObject> grassList)
+    
+
+
+    private void InstantiateTreesOnTerrain(Terrain terrain, List<UTSpawnObject> treesList)
     {
 
+        List<TreeInstance> treeInstanceCollection = new List<TreeInstance>(terrain.terrainData.treeInstances);
 #if UNITY_EDITOR
         int count = 0;
 #endif
 
-        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
-        //Debug.Log("Found details numbers: " + details.Length);
-        for (int i = 0; i < details.Length; i++)
-        //foreach(DetailPrototype detail in details)
+        foreach (UTSpawnObject spawnObject in treesList)
         {
-            //Debug.Log("Processing details : " + i);
+            TreeInstance treeInstance = new TreeInstance();
 
-            DetailPrototype detail = details[i];
-            if (detail.renderMode == DetailRenderMode.GrassBillboard)
-            {
+            treeInstance.heightScale = 1.0f;
+            treeInstance.widthScale = 1.0f;
 
-                int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
-                foreach (UTSpawnObject spawnObject in grassList)
-                {
+            treeInstance.prototypeIndex = spawnObject.prefabIndex;
 
-                    if (spawnObject.prefabIndex == i)
-                    {
+            //  Position need to be normalized (scaled from 0 to 1) based on the terrain width and height
+            Vector3 normalizedPosition = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y / terrain.terrainData.size.y, spawnObject.position.z / terrain.terrainData.size.z);
+            treeInstance.position = normalizedPosition;
+            treeInstance.rotation = spawnObject.rotation * Mathf.Deg2Rad;
 
-                        float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
-                        float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
+            Color color = Color.Lerp(spawnObject.color1, spawnObject.color2, Random.Range(0.0f, 1.0f));
+            treeInstance.color = color;
+            treeInstance.lightmapColor = Color.white;
 
-                        map[(int)z, (int)x] = 1;
+            treeInstanceCollection.Add(treeInstance);
+
+            ClearCircularArea(terrain, spawnObject.position, spawnObject.freeRadius);
 
 #if UNITY_EDITOR
-                        count++;
-                        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Grass...", $"Grass {count} of {grassList.Count} Instantiated.", (float)count / (float)treesList.Count);
+            count++;
+            UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {treesList.Count} Instantiated.", (float)count / (float)treesList.Count);
 #endif
 
-                    }
-
-                }
-
-                terrain.terrainData.SetDetailLayer(0, 0, i, map);
-
-            }
         }
 
+        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
+        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
 
-    }
-    */
-
-    private void InstantiateRocksOnTerrain(Terrain terrain, List<UTSpawnObject> rocksList)
-    {
-
-#if UNITY_EDITOR
-        int count = 0;
-#endif
-
-        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
-        //Debug.Log("Found details numbers: " + details.Length);
-        for (int i = 0; i < details.Length; i++)
-        //foreach(DetailPrototype detail in details)
-        {
-//            Debug.Log("Processing details : " + i);
-
-            DetailPrototype detail = details[i];
-            if (detail.renderMode == DetailRenderMode.VertexLit)
-            {
-                Debug.Log("Processing : " + rocksList.Count + " rocks in layer : " + i);
-
-                int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
-                foreach (UTSpawnObject spawnObject in rocksList)
-                {
-
-                    if (spawnObject.prefabIndex == i)
-                    {
-
-                        float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
-                        float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
-
-                        map[(int)z, (int)x] = 1;
-
-#if UNITY_EDITOR
-                        count++;
-                        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Rocks...", $"Rocks {count} of {rocksList.Count} Instantiated.", (float)count / (float)rocksList.Count);
-#endif
-
-                    }
-
-                }
-
-                terrain.terrainData.SetDetailLayer(0, 0, i, map);
-
-            }
-        }
-
-
+        terrain.Flush();
     }
 
-
-    //  Bushes
-    private void InstantiateBushesOnTerrain(Terrain terrain, List<UTSpawnObject> bushesList)
-    {
-
-#if UNITY_EDITOR
-        int count = 0;
-#endif
-
-        DetailPrototype[] details = terrain.terrainData.detailPrototypes;
-        //Debug.Log("Found details numbers: " + details.Length);
-        for (int i = 0; i < details.Length; i++)
-        //foreach(DetailPrototype detail in details)
-        {
-            //            Debug.Log("Processing details : " + i);
-
-            DetailPrototype detail = details[i];
-            if (detail.renderMode == DetailRenderMode.VertexLit)
-            {
-                Debug.Log("Processing : " + bushesList.Count + " bushes in layer : " + i);
-
-                int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
-                foreach (UTSpawnObject spawnObject in bushesList)
-                {
-
-                    if (spawnObject.prefabIndex == i)
-                    {
-
-                        float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
-                        float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
-
-                        map[(int)z, (int)x] = 1;
-
-#if UNITY_EDITOR
-                        count++;
-                        UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Bushes...", $"Bushes {count} of {bushesList.Count} Instantiated.", (float)count / (float)bushesList.Count);
-#endif
-
-                    }
-
-                }
-
-                terrain.terrainData.SetDetailLayer(0, 0, i, map);
-
-            }
-        }
-
-
-    }
 
     //  Trees
     private void GenerateTrees(Terrain terrain, UTTreesData treesData, ref List<UTSpawnObject> instantiatedObjects)
@@ -516,7 +436,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 if (groupObjectCount == 0) {
 
                     //  Every tree in the group will be the same prefab
-                    //  TODO : Add validation for existing index
                     prefabIdx = Random.Range(0, treesData.treeTemplates.Length);
 
                     groupObjectCount = treesData.treeTemplates[prefabIdx].groupSize;
@@ -525,7 +444,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                     }
 
                     // Get the group center position
-                    centerGroupPosition = GetCenterGroupPosition(terrain, treesData.treeTemplates[prefabIdx]);
+                    centerGroupPosition = GetCenterGroupPosition(terrain, treesData.treeTemplates[prefabIdx].groupRadius, treesData.treeTemplates[prefabIdx].freeRadius);
                     //                    centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
                 }
@@ -543,44 +462,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 if (CheckPositionOverlap(instantiatedObjects, treesData.treeTemplates[prefabIdx].freeRadius, position)) {
                     continue;
                 }
-                /*
-                GameObject hitGameObject;
-                float height;
-                Vector3 normal;
-                UTHit psHit = CheckAt( position, out height, out normal, out hitGameObject);
-                if (psHit != UTHit.TERRAIN_HIT) {
-                    continue;
-                }
-                position.y = height;
-                */
-//                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
-
-                //float height = terrain.terrainData.GetHeight((int)position.z, (int)position.x);
-                //float height = terrain.SampleHeight(position);
-                //if (height > 0) Debug.Log(height);
-//                if (height < objectsData.minAltitude || height > objectsData.maxAltitude) continue;
-                /*
-                float normalizedX = position.x / (float)terrain.terrainData.size.x;
-                float normalizedY = position.z / (float)terrain.terrainData.size.z;
-
-                float steepness = terrain.terrainData.GetSteepness(normalizedY, normalizedX);
-                */
-//                float stepness = UTTerrainUtils.GetStepness(terrain, position);
-//                if (stepness > objectsData.maxSlope)
-//                {
-                    //Debug.Log(steepness);
-                    //Debug.Log("rejected by steepness");
-                    //count++;
-//                    continue;
-//                }
 
                 if ((Random.value) > treesData.presence)
                 {
-                    //Debug.Log("rejected by presence");
-                    //count++;
                     continue;
                 }
-                //Debug.Log(count);
 
                 UTSpawnObject spawnObject = new UTSpawnObject();
 
@@ -590,78 +476,22 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 spawnObject.scale = Random.Range(1.0f - treesData.treeTemplates[prefabIdx].sizeVariation, 1.0f + treesData.treeTemplates[prefabIdx].sizeVariation);
                 spawnObject.freeRadius = treesData.treeTemplates[prefabIdx].freeRadius;
 
-                instantiatedObjects.Add(spawnObject);
+                spawnObject.color1 = treesData.treeTemplates[prefabIdx].color1;
+                spawnObject.color2 = treesData.treeTemplates[prefabIdx].color2;
 
-                //count++;
+                instantiatedObjects.Add(spawnObject);
 
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {treesData.maxQuantity} Created.", (float)count / (float)treesData.maxQuantity);
 #endif
 
-//                if (count >= objectsData.maxQuantity) break;
             }
         }
 
     }
 
     
-
-    private void InstantiateTreesOnTerrain(Terrain terrain, UTTreesData treesData, List<UTSpawnObject> treesList)
-    {
-
-        List<TreeInstance> treeInstanceCollection = new List<TreeInstance>(terrain.terrainData.treeInstances);
-#if UNITY_EDITOR
-        int count = 0;
-#endif
-
-        //  Refresh terrain trees list
-        TreePrototype[] newTreePrototypes;
-        newTreePrototypes = new TreePrototype[treesData.treeTemplates.Length];
-        int tindex = 0;
-        foreach (UTTreeTemplate treeTemplate in treesData.treeTemplates)
-        {
-            newTreePrototypes[tindex] = new TreePrototype();
-            newTreePrototypes[tindex].prefab = treeTemplate.mesh;
-            treeTemplate.prefabId = tindex;
-            tindex++;
-        }
-        terrain.terrainData.treePrototypes = newTreePrototypes;
-
-
-        foreach (UTSpawnObject spawnObject in treesList)
-        {
-            TreeInstance treeInstance = new TreeInstance();
-
-            treeInstance.heightScale = 1.0f;
-            treeInstance.widthScale = 1.0f;
-
-            treeInstance.prototypeIndex = spawnObject.prefabIndex;
-
-            //  Position need to be normalized (scaled from 0 to 1) based on the terrain width and height
-            Vector3 normalizedPosition = new Vector3(spawnObject.position.x / terrain.terrainData.size.x, spawnObject.position.y / terrain.terrainData.size.y, spawnObject.position.z / terrain.terrainData.size.z);
-            treeInstance.position = normalizedPosition;
-            treeInstance.rotation = spawnObject.rotation * Mathf.Deg2Rad;
-
-            treeInstance.color = Color.white;
-            treeInstance.lightmapColor = Color.white;
-
-            treeInstanceCollection.Add(treeInstance);
-
-            ClearCircularArea(terrain, spawnObject.position, spawnObject.freeRadius);
-
-#if UNITY_EDITOR
-            count++;
-            UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Trees...", $"Tree {count} of {treesList.Count} Instantiated.", (float)count / (float)treesList.Count);
-#endif
-
-        }
-
-        terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
-        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
-
-        terrain.Flush();
-    }
 
 
     //  Grass
@@ -679,11 +509,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 Vector3 position = Vector3.zero;
 
-                //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
                 position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
-
-                //XZ world position
-                //Vector3 wPos = terrain.DetailToWorld(position.z, position.x);
 
                 float height = terrain.SampleHeight(position);
 
@@ -701,13 +527,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 }
 
                 UTSpawnObject spawnObject = new UTSpawnObject();
+
                 int idx = Random.Range(0, grassData.templates.Length);
-                //  TODO : Add validation for existing index
+
                 spawnObject.prefabIndex = grassData.templates[idx].prefabId;
                 spawnObject.texture = grassData.templates[idx].texture;
-                spawnObject.rotation = Random.Range(0, 359);
                 spawnObject.position = position;
-                spawnObject.scale = Random.Range(1.0f - grassData.sizeVariation, 1.0f + grassData.sizeVariation);
 
                 instantiatedObjects.Add(spawnObject);
 
@@ -726,18 +551,42 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight / 32;
 
+        int groupObjectCount = 0;
+        Vector3 centerGroupPosition = Vector3.zero;
+
+
         if (rocksData.enabled)
         {
             while (count < maxCount)
             {
                 count++;
+
+                if (groupObjectCount == 0)
+                {
+
+
+                    groupObjectCount = rocksData.groupSize;
+                    if (groupObjectCount == 0)
+                    {
+                        groupObjectCount = 1;
+                    }
+
+                    // Get the group center position
+                    centerGroupPosition = GetCenterGroupPosition(terrain, rocksData.groupRadius, rocksData.freeRadius);
+
+                }
+
+                groupObjectCount--;
+
+                /*
                 Vector3 position = Vector3.zero;
 
                 //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
                 position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
+                */
 
-                //XZ world position
-                //Vector3 wPos = terrain.DetailToWorld(position.z, position.x);
+                Vector3 position = GetPositionInGroup(centerGroupPosition, rocksData.groupRadius);
+
 
                 float height = terrain.SampleHeight(position);
 
@@ -755,13 +604,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 }
 
                 UTSpawnObject spawnObject = new UTSpawnObject();
+
                 int idx = Random.Range(0, rocksData.templates.Length);
-                //  TODO : Add validation for existing index
+
                 spawnObject.prefabIndex = rocksData.templates[idx].prefabId;
                 spawnObject.mesh = rocksData.templates[idx].mesh;
                 spawnObject.rotation = Random.Range(0, 359);
-                spawnObject.position = position;
-                spawnObject.scale = Random.Range(1.0f - rocksData.sizeVariation, 1.0f + rocksData.sizeVariation);
+                spawnObject.position = position;            
 
                 instantiatedObjects.Add(spawnObject);
 
@@ -775,7 +624,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     }
 
 
-    //  Rocks
+    //  Bushes
     private void GenerateBushes(Terrain terrain, UTBushesData bushesData, ref List<UTSpawnObject> instantiatedObjects)
     {
         int count = 0;
@@ -792,8 +641,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
                 position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
-                //XZ world position
-                //Vector3 wPos = terrain.DetailToWorld(position.z, position.x);
 
                 float height = terrain.SampleHeight(position);
 
@@ -812,15 +659,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                 UTSpawnObject spawnObject = new UTSpawnObject();
                 int idx = Random.Range(0, bushesData.templates.Length);
-                //  TODO : Add validation for existing index
+
                 spawnObject.prefabIndex = bushesData.templates[idx].prefabId;
                 spawnObject.mesh = bushesData.templates[idx].mesh;
-                spawnObject.rotation = Random.Range(0, 359);
                 spawnObject.position = position;
-                spawnObject.scale = Random.Range(1.0f - bushesData.sizeVariation, 1.0f + bushesData.sizeVariation);
 
                 instantiatedObjects.Add(spawnObject);
-
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Bushes...", $"Bushes {count} of {bushesData.maxQuantity} Created.", (float)count / (float)bushesData.maxQuantity);
@@ -830,167 +674,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
     }
 
-    /*
-    private void GenerateTerrainObjects(UTSpawnData objectsData, ref List<UTSpawnObject> instantiatedObjects, float xMin, float zMin, float xMax, float zMax)
-    {
-
-        if (objectsData.enabled)
-        {
-
-            int groupsQty = (int)((xMax - xMin) * (zMax - zMin) / (2 * objectsData.groupRadius) / (2 * objectsData.groupRadius));
-            //Debug.Log("To create for this group : " + groupsQty);
-            //  For every group
-            for (int n = 0; n < groupsQty; n++)
-            {
-                //Debug.Log("Group : " + n);
-                //  Get the group center position
-                Vector3 centerGroup;
-                if (!GetGridRandomPosition(xMin, zMin, xMax, zMax, out centerGroup))
-                {
-                    continue;
-                }
-                //Debug.Log("centerGroup : " + centerGroup);
-                //  Place the elements of the group
-                for (int t = 0; t < objectsData.groupSize; t++)
-                {
-                    //Debug.Log(" Actual from objectsData.groupSize : "+t);
-                    Vector3 position;
-                    if (GetItemPosition(centerGroup, xMin, zMin, xMax, zMax, objectsData.groupRadius, objectsData.maxSlope, objectsData.minAltitude, objectsData.maxAltitude, objectsData.freeRadius, maxTriesToLocateObjects, out position))
-                    {
-                        //Debug.Log("Object position : " + position);
-                        //  Value based on the terrain mask
-                        float noiseValue = NoiseGenerator.GetNoiseAt(position.x, position.z, noiseScale, noiseOcatves, noisePersistance, noiseLacunarity);
-                        //  Random value to compare
-                        float randomValue = Random.Range(0.0f, 1.0f);
-                        //  The lower the chances on the terrain and the presence the lower the chance to display an element
-                        if (randomValue <= noiseValue * objectsData.presence)
-                        {
-
-                            //  Randomize the orientation
-                           // Quaternion orientation = Quaternion.AngleAxis(Random.Range(0, 359), Vector3.up);
-                            
-                            //GameObject prefab = GetRandomPrefab(objectsData.prefabs);
-
-                            //if (prefab != null)
-                            //{
-                              //  GameObject instance = Instantiate(prefab, position, orientation);
-                                //instance.transform.parent = go.transform;
-
-                                //ChangeLayersRecursively(instance, objectsData.layerName);
-
-                                //instantiatedObjects.Add(instance);
-                            //}
-                            
-
-                            UTSpawnObject spawnObject = new UTSpawnObject();
-
-                            int idx = objectsData.prefabsIds[Random.Range(0, objectsData.prefabsIds.Length)];
-                            //  TODO : Add validation for existing index
-                            spawnObject.prefabIndex = idx;
-                            spawnObject.rotation = Random.Range(0, 359);
-                            spawnObject.position = position;
-
-                            instantiatedObjects.Add(spawnObject);
-                        }
-                    }
-
-                }
-
-            }
-            //Debug.Log("Placed " + treesPlaced + " trees of " + treesGroupsQty + " groups of " + treeGroupSize + " tress.");
-        }
-
-    }
-*/
-    /*
-    private void PlaceTrees(float xMin, float zMin, float xMax, float zMax)
-    {
-        if (treesEnabled)
-        {
-
-            int groupsQty = (int)((xMax - xMin) * (zMax - zMin) / (2 * treeGroupRadius) / (2 * treeGroupRadius));
-
-            GameObject go = new GameObject();
-            go.transform.parent = treesParent.transform;
-            go.name = "" + xMin + "/" + zMin;
-
-            //  For every group
-            for (int n = 0; n < groupsQty; n++)
-            {
-
-                PSSpawnInformation spawnInformation;
-
-                //  Get the group center position
-                Vector3 centerGroup;
-                if (!GetGridRandomPosition(xMin, zMin, xMax, zMax, out centerGroup, out spawnInformation))
-                {
-                    continue;
-                }
-
-                //  Place the elements of the group
-                for (int t = 0; t < treeGroupSize; t++)
-                {
-
-                    Vector3 position;
-                    if (GetItemPosition(centerGroup, xMin, zMin, xMax, zMax, treeGroupRadius, treeMaxSlope, treeMinAltitude, treeMaxAltitude, treeFreeRadius, maxTriesToLocateObjects, out position))
-                    {
-
-                        //  Value based on the terrain mask
-                        float noiseValue = NoiseGenerator.GetNoiseAt(position.x, position.z, noiseScale, noiseOcatves, noisePersistance, noiseLacunarity);
-                        //  Random value to compare
-                        float randomValue = Random.Range(0.0f, 1.0f);
-                        //  The lower the chances on the terrain and the presence the lower the chance to display an element
-                        if (randomValue <= noiseValue * treePresence)
-                        {
-
-                            //  Randomize the orientation
-                            Quaternion orientation = Quaternion.AngleAxis(Random.Range(0, 359), Vector3.up);
-
-                            GameObject prefab = GetRandomPrefab((spawnInformation == null) ? trees : spawnInformation.treesPrefabs);
-
-                            if (prefab != null)
-                            {
-                                GameObject instance = Instantiate(prefab, position, orientation);
-                                instance.transform.parent = go.transform;
-
-                                ChangeLayersRecursively(instance, "Trees");
-
-                                treesList.Add(instance);
-                            }
-
-                        }
-                    }
-
-                }
-
-            }
-            //Debug.Log("Placed " + treesPlaced + " trees of " + treesGroupsQty + " groups of " + treeGroupSize + " tress.");
-        }
-
-    }
-
-    */
-
-    private bool GetGridRandomPosition(float minX, float minZ, float maxX, float maxZ, out Vector3 position)
-    {
-
-        position = new Vector3(Random.Range(minX, maxX), 0, Random.Range(minZ, maxZ));
-
-        Vector3 normal;
-        GameObject hitGameObject;
-
-        float height;
-        UTHit psHit = CheckAt(position, out height, out normal, out hitGameObject);
-
-        //        if (!GetTerrainHeight(position, out height, out normal))
-        if (psHit != UTHit.TERRAIN_HIT)
-        {
-            return false;
-        }
-        position.y = height;
-
-        return true;
-    }
+    
 
 
     /*
@@ -1044,27 +728,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     }
 */
 
-    /*
-    private bool GetItemPosition(Vector3 centerGroup, float xMin, float zMin, float xMax, float zMax, float groupRadius, float maxSlope, float minAltitude, float maxAltitude, float freeRadius, int maxTries, out Vector3 position)
-    {
-        position = Vector3.zero;
-
-        float height = 0;
-
-        int tryCount = 0;
-        bool validPosition = false;
-
-        while (!validPosition && tryCount++ < maxTries)
-        {
-            //  Obtain a position
-            position = GetPositionInGroup(centerGroup, groupRadius);
-            Debug.Log("testing position : " + position);
-            validPosition = CheckValidPosition(position, maxSlope, minAltitude, maxAltitude, out height);
-            position.y = height;
-        }
-
-        return validPosition;
-    }*/
+    
 
     private Vector3 GetPositionInGroup(Vector3 centerGroup, float groupRadius)
     {
@@ -1079,141 +743,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         return position;
     }
 
-    /*
-    private bool CheckValidPosition(Vector3 position, float maxSlope, float minAltitude, float maxAltitude, out float height)
-    {
-        height = 0;
-        
-        //  Check values are in terrain boundaries
-        if ((position.x < terrainMin.x + freeBorderSize) || (position.x > terrainMax.x - freeBorderSize) || (position.z < terrainMin.z + freeBorderSize) || (position.z > terrainMax.z - freeBorderSize))
-        {
-            //Debug.Log(position);
-            return false;
-        }
+   
 
-        //  Check if there is a maximum distance set and the distance to the center if bigger than that
-        float distance = (position - terrainCenter).magnitude;
-        if (maxDistanceFromCenter > 0.0f && maxDistanceFromCenter < distance)
-        {
-            return false;
-        }
-
-        Vector3 normal;
-        GameObject hitGameObject;
-
-        UTHit psHit = CheckAt(position, out height, out normal, out hitGameObject);
-
-        //        if (!GetTerrainHeight(position, out height, out normal))
-        if (psHit != UTHit.TERRAIN_HIT)
-        {
-            //Debug.Log("Not Terrain Hit " + hitGameObject.name);
-            return false;
-        }
-        position.y = height;
-
-
-        //  Check Min and Max Altitude
-        if (height < minAltitude || height > maxAltitude)
-        {
-            //Debug.Log(height);
-            //Debug.Log(position);
-            return false;
-        }
-        
-         //       if (CheckPlaceholderAt(position))
-         //       {
-         //           return false;
-         //       }
-        
-        //  Check max slope
-        if (Vector3.Angle(Vector3.up, normal) > maxSlope)
-        {
-            return false;
-        }
-
-        if (CheckOverlap(position, treesData.freeRadius))
-        {
-            return false;
-        }
-
-        //        if (clearGrass)
-        //{
-        //  If overlaps any grass remove the grass
-        //CleanGrassInArea(position, freeRadius);
-        //}
-
-        //  Return the position
-        return true;
-
-    }
-    */
-
-
-    private bool CheckOverlap(Vector3 position, float freeRadius)
-    {
-        /*
-        foreach (GameObject go in treesList)
-        {
-            if (Vector3.Distance(position, go.transform.position) <= freeRadius)
-            {
-                return true;
-            }
-        }
-
-        foreach (GameObject go in bushesList)
-        {
-            if (Vector3.Distance(position, go.transform.position) <= freeRadius)
-            {
-                return true;
-            }
-        }
-
-        foreach (GameObject go in rocksList)
-        {
-            if (Vector3.Distance(position, go.transform.position) <= freeRadius)
-            {
-                return true;
-            }
-        }
-
-        foreach (GameObject go in grassList)
-        {
-            if (Vector3.Distance(position, go.transform.position) <= freeRadius)
-            {
-                return true;
-            }
-        }
-        */
-        return false;
-    }
-
-
-    private GameObject GetRandomPrefab(GameObject[] prefabs)
-    {
-        if (prefabs.Length > 0)
-        {
-            int idx = Random.Range(0, prefabs.Length);
-            return prefabs[idx];
-        }
-        else
-        {
-            return null;
-        }
-
-    }
-
-    /*
-    public static void ChangeLayersRecursively(GameObject go, string name)
-    {
-        go.layer = LayerMask.NameToLayer(name);
-        foreach (Transform child in go.transform)
-        {
-            ChangeLayersRecursively(child.gameObject, name);
-        }
-    }*/
-
-
-    private Vector3 GetCenterGroupPosition(Terrain terrain, UTTreeTemplate treeTemplate)
+    private Vector3 GetCenterGroupPosition(Terrain terrain, float groupRadius, float freeRadius)
     {
         /*
         float x = (int)terrain.terrainData.size.x / objectsData.groupRadius;
@@ -1224,7 +756,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         */
         Vector3 centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
-        float areaRadius = (treeTemplate.groupRadius + treeTemplate.freeRadius);
+        float areaRadius = (groupRadius + freeRadius);
 
         centerGroupPosition.x = (int)centerGroupPosition.x / (int)areaRadius;
         centerGroupPosition.x = centerGroupPosition.x * (int)areaRadius + (int)areaRadius / 2;
@@ -1293,7 +825,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             (position.z < terrain.terrainData.bounds.min.z) ||
             (position.z > terrain.terrainData.bounds.max.z))
         {
-            //Debug.Log(position);
             return false;
         }
 
@@ -1305,7 +836,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         //  Check if the position is directly over terrain
         if (psHit != UTHit.TERRAIN_HIT)
         {
-            //Debug.Log("Not Terrain Hit " + hitGameObject.name);
             return false;
         }
         position.y = height;
@@ -1313,8 +843,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         //  Check Min and Max Altitude
         if (height < minAltitude || height > maxAltitude)
         {
-            //Debug.Log(height);
-            //Debug.Log(position);
             return false;
         }
 
@@ -1322,8 +850,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         float stepness = UTTerrainUtils.GetStepness(terrain, position);
         if (stepness > maxSlope)
         {
-            //Debug.Log(steepness);
-            //Debug.Log("rejected by steepness");
             return false;
         }
 
@@ -1333,9 +859,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     }
 
 
-    private void ClearArea(Terrain terrain, Vector3 center, float width, float height)
-    {
-    }
 
     private void ClearCircularArea (Terrain terrain, Vector3 position, float radius) {
 
