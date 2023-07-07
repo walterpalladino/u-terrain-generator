@@ -1558,7 +1558,7 @@ MonoBehaviour:
       prefabId: 11
     groupSize: 4
     groupRadius: 2
-    freeRadius: 5
+    freeRadius: 10
     maxSlope: 40
     minAltitude: 6
     maxAltitude: 100

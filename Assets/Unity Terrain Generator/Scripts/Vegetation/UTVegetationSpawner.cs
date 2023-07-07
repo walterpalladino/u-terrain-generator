@@ -53,6 +53,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     List<UTSpawnObject> grassList = new List<UTSpawnObject>();
 
 
+    int[,] treesArea;
+    int[,] rocksArea;
+    int[,] bushesArea;
+    int[,] grassArea;
+
+
     Terrain terrain;
 
 
@@ -87,6 +93,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         rocksList = new List<UTSpawnObject>();
         bushesList = new List<UTSpawnObject>();
         grassList = new List<UTSpawnObject>();
+
+        treesArea = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
+        rocksArea = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
+        bushesArea = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
+        grassArea = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
 
         //  Clear all Rocks, Grass
         UTTerrainUtils.ClearAllDetailLayers(terrain);
@@ -281,6 +292,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         terrain.terrainData.detailPrototypes = detailPrototypes;
     }
 
+
     private void UpdateTreesTemplates(Terrain terrain)
     {
         //  Refresh terrain trees list
@@ -298,6 +310,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         
         terrain.terrainData.RefreshPrototypes();
     }
+
 
     public void PlaceTerrainObjects(Terrain terrain)
     {
@@ -353,10 +366,14 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             {
                 if (spawnObject.prefabIndex == i)
                 {
+                    /*
                     float x = spawnObject.position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
                     float z = spawnObject.position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
 
                     map[(int)z, (int)x] = 1;
+                    */
+                    Vector2Int mapPosition = TerrainPositionToDetail(spawnObject.position);
+                    map[mapPosition.x, mapPosition.y] = 1;
 
 #if UNITY_EDITOR
                     count++;
@@ -401,7 +418,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
             treeInstanceCollection.Add(treeInstance);
 
-            ClearCircularArea(terrain, spawnObject.position, spawnObject.freeRadius);
+            ClearCircularArea(spawnObject.position, spawnObject.freeRadius);
 
 #if UNITY_EDITOR
             count++;
@@ -526,6 +543,32 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                     continue;
                 }
 
+                Vector2Int mapPosition = TerrainPositionToDetail(position);
+
+//                if (CheckCircularArea(position, 1, rocksArea))
+//                {
+//                    continue;
+//                }
+
+                                if (rocksArea[mapPosition.x, mapPosition.y] != 0)
+                                {
+                                    continue;
+                                }
+                                if (bushesArea[mapPosition.x, mapPosition.y] != 0)
+                                {
+                                    continue;
+                                }
+
+                //if (CheckCircularArea(position, 2, bushesArea))
+                //{
+                //    continue;
+                //}
+
+                if (grassArea[mapPosition.x, mapPosition.y] != 0)
+                {
+                    continue;
+                }
+
                 UTSpawnObject spawnObject = new UTSpawnObject();
 
                 int idx = Random.Range(0, grassData.templates.Length);
@@ -535,6 +578,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 spawnObject.position = position;
 
                 instantiatedObjects.Add(spawnObject);
+
+                //  Register the position occupied
+                grassArea[mapPosition.x, mapPosition.y] = 1;
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Grass...", $"Grass {count} of {grassData.maxQuantity} Created.", (float)count / (float)grassData.maxQuantity);
@@ -594,6 +640,12 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                     continue;
                 }
 
+                Vector2Int mapPosition = TerrainPositionToDetail(position);
+
+                if (rocksArea[mapPosition.x, mapPosition.y] != 0) {
+                    continue;
+                }
+
                 UTSpawnObject spawnObject = new UTSpawnObject();
 
                 int idx = Random.Range(0, rocksData.templates.Length);
@@ -604,6 +656,9 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 spawnObject.position = position;            
 
                 instantiatedObjects.Add(spawnObject);
+
+                //  Register the position occupied
+                rocksArea[mapPosition.x, mapPosition.y] = 1;
 
 
 #if UNITY_EDITOR
@@ -647,6 +702,21 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                     continue;
                 }
 
+                Vector2Int mapPosition = TerrainPositionToDetail(position);
+
+                //                if (rocksArea[mapPosition.x, mapPosition.y] != 0)
+                //              {
+                //                continue;
+                //          }
+                if (CheckCircularArea(position, rocksData.freeRadius / 2.0f, rocksArea))
+                {
+                    continue;
+                }
+                if (bushesArea[mapPosition.x, mapPosition.y] != 0)
+                {
+                    continue;
+                }
+
                 UTSpawnObject spawnObject = new UTSpawnObject();
                 int idx = Random.Range(0, bushesData.templates.Length);
 
@@ -655,6 +725,10 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 spawnObject.position = position;
 
                 instantiatedObjects.Add(spawnObject);
+
+                //  Register the position occupied
+                bushesArea[mapPosition.x, mapPosition.y] = 1;
+
 
 #if UNITY_EDITOR
                 UnityEditor.EditorUtility.DisplayCancelableProgressBar("Spawning Bushes...", $"Bushes {count} of {bushesData.maxQuantity} Created.", (float)count / (float)bushesData.maxQuantity);
@@ -790,7 +864,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
 
 
-    private void ClearCircularArea (Terrain terrain, Vector3 position, float radius) {
+    private void ClearCircularArea (Vector3 position, float radius) {
 
         DetailPrototype[] details = terrain.terrainData.detailPrototypes;
         
@@ -828,5 +902,43 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     }
 
 
+    private bool CheckCircularArea(Vector3 position, float radius, int[,] map)
+    {
+
+        Vector2Int detailSpaceCenter = TerrainPositionToDetail(position);
+
+        int detailSpaceRadius = (int)(radius * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x);
+
+        for (int x = detailSpaceCenter.x - detailSpaceRadius; x < detailSpaceCenter.x + detailSpaceRadius; x++)
+        {
+            for (int y = detailSpaceCenter.y - detailSpaceRadius; y < detailSpaceCenter.y + detailSpaceRadius; y++)
+            {
+
+                if (x < 0 ||
+                    x >= terrain.terrainData.detailWidth ||
+                    y < 0 ||
+                    y >= terrain.terrainData.detailHeight)
+                {
+                    continue;
+                }
+
+                if (Vector2Int.Distance(new Vector2Int(x, y), detailSpaceCenter) <= detailSpaceRadius)
+                {
+                    if (map[x, y] != 0) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    private Vector2Int TerrainPositionToDetail(Vector3 position) {
+
+        float x = position.x * (float)terrain.terrainData.detailWidth / (float)terrain.terrainData.size.x;
+        float z = position.z * (float)terrain.terrainData.detailHeight / (float)terrain.terrainData.size.z;
+
+        return new Vector2Int((int)z, (int)x);
+    }
 }
 
