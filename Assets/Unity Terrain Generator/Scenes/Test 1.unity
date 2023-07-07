@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.21657676, g: 0.6078664, b: 0.925724, a: 1}
+  m_IndirectSpecularColor: {r: 0.21371761, g: 0.60506546, b: 0.9229206, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1404,7 +1404,7 @@ MonoBehaviour:
   treesSpawnData:
     enabled: 1
     presence: 0.3
-    maxQuantity: 75000
+    maxQuantity: 300000
     treeTemplates:
     - mesh: {fileID: 919132149155446097, guid: 27540e78f51b74b6c9be3a4c8ec0104f, type: 3}
       color1: {r: 1, g: 1, b: 1, a: 1}
@@ -1416,7 +1416,8 @@ MonoBehaviour:
       maxSlope: 30
       minAltitude: 8
       maxAltitude: 20
-      sizeVariation: 0.5
+      minSize: 0.75
+      maxSize: 1.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 1bff90f57f6d54c36991aa3731ec24f6, type: 3}
       color1: {r: 1, g: 1, b: 1, a: 1}
@@ -1428,7 +1429,8 @@ MonoBehaviour:
       maxSlope: 30
       minAltitude: 15
       maxAltitude: 100
-      sizeVariation: 0.5
+      minSize: 0.75
+      maxSize: 1.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 5db81b6858e584a1b968c4f5cd3389f7, type: 3}
       color1: {r: 1, g: 1, b: 1, a: 1}
@@ -1440,7 +1442,8 @@ MonoBehaviour:
       maxSlope: 30
       minAltitude: 10
       maxAltitude: 100
-      sizeVariation: 0.5
+      minSize: 0.75
+      maxSize: 1.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: 7c3103b81d1f64ecca626095f955dfcb, type: 3}
       color1: {r: 1, g: 1, b: 1, a: 1}
@@ -1452,7 +1455,8 @@ MonoBehaviour:
       maxSlope: 30
       minAltitude: 10
       maxAltitude: 100
-      sizeVariation: 0.5
+      minSize: 0.75
+      maxSize: 1.5
       sinkBottom: 0.25
     - mesh: {fileID: 919132149155446097, guid: a844ea19ce22f42d68649d5a26f02a86, type: 3}
       color1: {r: 1, g: 1, b: 1, a: 1}
@@ -1464,11 +1468,12 @@ MonoBehaviour:
       maxSlope: 30
       minAltitude: 10
       maxAltitude: 100
-      sizeVariation: 0.5
+      minSize: 0.75
+      maxSize: 1.5
       sinkBottom: 0.25
   bushesData:
     enabled: 1
-    presence: 1
+    presence: 0.2
     maxQuantity: 1000
     templates:
     - mesh: {fileID: 919132149155446097, guid: 1d65d21f6a3b842fe8e7b9dd3132a6e2, type: 3}
@@ -1523,7 +1528,7 @@ MonoBehaviour:
     maxAltitude: 50
   rocksData:
     enabled: 1
-    presence: 0.4
+    presence: 0.01
     maxQuantity: 1000
     templates:
     - mesh: {fileID: 919132149155446097, guid: 71a246af4bc894d0cac900533dd76f0a, type: 3}

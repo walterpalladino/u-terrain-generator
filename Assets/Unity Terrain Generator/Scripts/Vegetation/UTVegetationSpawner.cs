@@ -46,11 +46,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
 
 
-
-    private List<UTSpawnObject> treesList = new List<UTSpawnObject>();
-    private List<UTSpawnObject> rocksList = new List<UTSpawnObject>();
-    private List<UTSpawnObject> bushesList = new List<UTSpawnObject>();
-    private List<UTSpawnObject> grassList = new List<UTSpawnObject>();
+    //  Private lists to store data to spawn
+    List<UTSpawnObject> treesList = new List<UTSpawnObject>();
+    List<UTSpawnObject> rocksList = new List<UTSpawnObject>();
+    List<UTSpawnObject> bushesList = new List<UTSpawnObject>();
+    List<UTSpawnObject> grassList = new List<UTSpawnObject>();
 
 
     Terrain terrain;
@@ -67,6 +67,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     {
 
     }
+
 
     //
     public void Generate()
@@ -100,6 +101,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
     }
+
 
     public void Clear()
     {
@@ -211,7 +213,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         //  Bushes
         for (int i = 0; i < bushesData.templates.Length; i++)
         {
-            //Debug.Log("Processing rocks : " + i + " idx : " + idx);
             detailPrototypes[idx] = new DetailPrototype();
             detailPrototypes[idx].prototype = bushesData.templates[i].mesh;
 
@@ -246,7 +247,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         //  Rocks
         for (int i = 0; i < rocksData.templates.Length; i++)
         {
-            //Debug.Log("Processing rocks : " + i + " idx : " + idx);
             detailPrototypes[idx] = new DetailPrototype();
             detailPrototypes[idx].prototype = rocksData.templates[i].mesh;
 
@@ -279,7 +279,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
 
         terrain.terrainData.detailPrototypes = detailPrototypes;
-
     }
 
     private void UpdateTreesTemplates(Terrain terrain)
@@ -296,6 +295,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
             tindex++;
         }
         terrain.terrainData.treePrototypes = newTreePrototypes;
+        
+        terrain.terrainData.RefreshPrototypes();
     }
 
     public void PlaceTerrainObjects(Terrain terrain)
@@ -345,8 +346,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         {
             DetailPrototype detail = details[i];
 
+            //  We are clearing the layer and re fill it
             int[,] map = new int[terrain.terrainData.detailWidth, terrain.terrainData.detailHeight];
-            //int[,] map = terrain.terrainData.GetDetailLayer(0, 0, terrain.terrainData.detailWidth, terrain.terrainData.detailHeight, i);
 
             foreach (UTSpawnObject spawnObject in objectsList)
             {
@@ -384,8 +385,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         {
             TreeInstance treeInstance = new TreeInstance();
 
-            treeInstance.heightScale = 1.0f;
-            treeInstance.widthScale = 1.0f;
+            treeInstance.heightScale = spawnObject.scale;
+            treeInstance.widthScale = spawnObject.scale;
 
             treeInstance.prototypeIndex = spawnObject.prefabIndex;
 
@@ -409,10 +410,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         }
 
+        //  We will not snap to the heightmap so we can sunk it a bit. Good for slopes.
         terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), false);
-        //terrain.terrainData.SetTreeInstances(treeInstanceCollection.ToArray(), true);
 
         terrain.Flush();
+
     }
 
 
@@ -422,7 +424,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         if (treesData.enabled)
         {
 
-            treesData.maxQuantity = (int)(terrain.terrainData.size.x * terrain.terrainData.size.z * treesData.presence) / 4;
+            treesData.maxQuantity = (int)(terrain.terrainData.size.x * terrain.terrainData.size.z * treesData.presence);
 
             int count = 0;
             int groupObjectCount = 0;
@@ -445,8 +447,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                     // Get the group center position
                     centerGroupPosition = GetCenterGroupPosition(terrain, treesData.treeTemplates[prefabIdx].groupRadius, treesData.treeTemplates[prefabIdx].freeRadius);
-                    //                    centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
-
                 }
 
                 groupObjectCount--;
@@ -473,7 +473,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 spawnObject.prefabIndex = prefabIdx;
                 spawnObject.rotation = Random.Range(0, 359);
                 spawnObject.position = position;
-                spawnObject.scale = Random.Range(1.0f - treesData.treeTemplates[prefabIdx].sizeVariation, 1.0f + treesData.treeTemplates[prefabIdx].sizeVariation);
+                spawnObject.scale = Random.Range(treesData.treeTemplates[prefabIdx].minSize, treesData.treeTemplates[prefabIdx].maxSize);
                 spawnObject.freeRadius = treesData.treeTemplates[prefabIdx].freeRadius;
 
                 spawnObject.color1 = treesData.treeTemplates[prefabIdx].color1;
@@ -544,12 +544,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
     }
 
+
     //  Rocks
     private void GenerateRocks(Terrain terrain, UTRocksData rocksData, ref List<UTSpawnObject> instantiatedObjects)
     {
         int count = 0;
 
-        int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight / 32;
+        int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight;
 
         int groupObjectCount = 0;
         Vector3 centerGroupPosition = Vector3.zero;
@@ -564,7 +565,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 if (groupObjectCount == 0)
                 {
 
-
                     groupObjectCount = rocksData.groupSize;
                     if (groupObjectCount == 0)
                     {
@@ -573,20 +573,11 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
                     // Get the group center position
                     centerGroupPosition = GetCenterGroupPosition(terrain, rocksData.groupRadius, rocksData.freeRadius);
-
                 }
 
                 groupObjectCount--;
 
-                /*
-                Vector3 position = Vector3.zero;
-
-                //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
-                position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
-                */
-
                 Vector3 position = GetPositionInGroup(centerGroupPosition, rocksData.groupRadius);
-
 
                 float height = terrain.SampleHeight(position);
 
@@ -629,7 +620,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     {
         int count = 0;
 
-        int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight / 32;
+        int maxCount = terrain.terrainData.detailWidth * terrain.terrainData.detailHeight;
 
         if (bushesData.enabled)
         {
@@ -638,7 +629,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
                 count++;
                 Vector3 position = Vector3.zero;
 
-                //position = new Vector3(Random.Range(0, terrain.terrainData.detailWidth), 0, Random.Range(0, terrain.terrainData.detailHeight));
                 position = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
 
@@ -674,67 +664,13 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
         }
     }
 
-    
-
-
-    /*
-
-    private UTHit CheckAt(Vector3 position, out float height, out Vector3 normal, out GameObject hitGameObject)
-    {
-        hitGameObject = null;
-        height = -1;
-        normal = Vector3.zero;
-
-        position.y = 10000f;
-
-        Ray ray = new Ray(position, Vector3.down);
-
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, ~terrainIgnoreLayers))
-
-        {
-            hitGameObject = hit.collider.gameObject;
-            //Debug.Log("Hit object : " + hit.collider.gameObject.name + " with layer : " + LayerMask.LayerToName(hit.collider.gameObject.layer));
-
-            if (hit.collider.gameObject.GetComponent<PSPlaceholder>() != null)
-            {
-                height = hit.point.y;
-                normal = hit.normal;
-
-                return UTHit.PLACEHOLDER_HIT;
-            }
-            else
-            //            if (hit.collider.gameObject.GetComponent<PSTerrain>() != null)
-            if (LayerMask.LayerToName(hit.collider.gameObject.layer).Equals("Terrain"))
-            {
-                height = hit.point.y;
-                normal = hit.normal;
-
-                return UTHit.TERRAIN_HIT;
-            }
-            //  Check terrain meshes using LOD
-            //if (hit.collider.gameObject.name.Contains("LOD0") && hit.collider.transform.parent.gameObject.GetComponent<PSTerrain>() != null)
-            if (hit.collider.gameObject.name.Contains("LOD0") && LayerMask.LayerToName(hit.collider.gameObject.layer).Equals("Terrain"))
-            {
-                height = hit.point.y;
-                normal = hit.normal;
-
-                return UTHit.TERRAIN_HIT;
-            }
-        }
-
-        return UTHit.NO_HIT;
-    }
-*/
-
-    
+        
 
     private Vector3 GetPositionInGroup(Vector3 centerGroup, float groupRadius)
     {
         Vector3 position;
 
-        position = new Vector3(Random.Range(centerGroup.x - groupRadius, centerGroup.x + groupRadius), 0, Random.Range(centerGroup.z - groupRadius, centerGroup.z + groupRadius));
+        //position = new Vector3(Random.Range(centerGroup.x - groupRadius, centerGroup.x + groupRadius), 0, Random.Range(centerGroup.z - groupRadius, centerGroup.z + groupRadius));
         
         float angle = Random.Range(0, 2 * Mathf.PI);
         float distance = Random.Range(0, groupRadius);
@@ -747,13 +683,6 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
     private Vector3 GetCenterGroupPosition(Terrain terrain, float groupRadius, float freeRadius)
     {
-        /*
-        float x = (int)terrain.terrainData.size.x / objectsData.groupRadius;
-        x = x + objectsData.groupRadius + objectsData.groupRadius / 2;
-
-        float z = (int)terrain.terrainData.size.z / objectsData.groupRadius;
-        z = z + objectsData.groupRadius + objectsData.groupRadius / 2;
-        */
         Vector3 centerGroupPosition = new Vector3(Random.Range(0, terrain.terrainData.size.x), 0, Random.Range(0, terrain.terrainData.size.z));
 
         float areaRadius = (groupRadius + freeRadius);
@@ -814,6 +743,7 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 
         return UTHit.NO_HIT;
     }
+
 
     private bool CheckValidPosition(Terrain terrain, Vector3 position, float minAltitude, float maxAltitude, float maxSlope, out float height)
     {

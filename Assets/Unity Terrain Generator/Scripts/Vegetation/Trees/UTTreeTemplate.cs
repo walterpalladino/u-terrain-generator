@@ -21,8 +21,10 @@ public class UTTreeTemplate
     public float maxSlope = 20.0f;
     public float minAltitude = 0.0f;
     public float maxAltitude = 100.0f;
-    [Range(0.0f, 1.0f)]
-    public float sizeVariation = 0.0f;
+
+    public float minSize = 0.75f;
+    public float maxSize = 1.5f;
+
     [Tooltip("Sunks the bottom of the tree. usefull for some meshes ending on flat bottoms.")]
     public float sinkBottom = 0.0f;
 }
