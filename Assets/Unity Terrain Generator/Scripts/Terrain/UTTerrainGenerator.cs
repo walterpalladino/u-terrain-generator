@@ -21,7 +21,6 @@ public class UTTerrainLayer
     public int textureIndex;
     public float startHeight;
     public float endHeight;
-    public float overlap;
 
     public Texture2D texture = null;
     public Texture2D bump = null;
@@ -37,7 +36,6 @@ public class UTTerrainCliff
     public bool enabled;
     public int textureIndex;
     public float minAngle;
-    public float overlap;
 
     public Texture2D texture = null;
     public Texture2D bump = null;

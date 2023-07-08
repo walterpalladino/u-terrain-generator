@@ -8,7 +8,14 @@ Terrain Generator and Vegetation Spawner for Unity Terrain.
 
  - Terrain generator allowing to create tillable areas or masked islands.
  - Spawner including trees, bushes, rocks and grass.
+ - Terrain Generator and Vegetation Spawner are independants features.
 
+
+### Special Notes
+
+- Terrain generator:
+ - All layers are created from the script. To identify the layers the terrain name is used as part of the layer name so do not use duplicate terrain names.
+ 
 
 ## Render Pipelines
 The actual project is using URP but the scripts are agnostics so you can used on SRP or HRDP
