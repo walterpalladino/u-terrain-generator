@@ -78,7 +78,19 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
     //
     public void Generate()
     {
+        StartCoroutine(IGenerateTerrainObjects());
+        //GenerateTerrainObjects();
+        
+    }
 
+    IEnumerator IGenerateTerrainObjects()
+    {
+        GenerateTerrainObjects();
+        yield return null;
+    }
+
+    void GenerateTerrainObjects()
+    {
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Vegetation...", "...", 0.0f);
 #endif
@@ -111,8 +123,8 @@ public class UTVegetationSpawner : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
-    }
-
+    }    
+    
 
     public void Clear()
     {

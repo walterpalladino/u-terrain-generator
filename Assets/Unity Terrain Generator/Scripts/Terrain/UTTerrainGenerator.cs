@@ -187,6 +187,13 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 
     public void Generate()
     {
+        StartCoroutine(IGenerate());
+       
+    }
+    
+    
+    IEnumerator IGenerate()
+    {
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.DisplayCancelableProgressBar("Generating Terrain...", "...", 0.0f);
 #endif
@@ -196,6 +203,7 @@ public class UTTerrainGenerator : MonoBehaviour, IGenerator
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.ClearProgressBar();
 #endif
+        yield return null;
     }
 
     private TerrainData GenerateTerrain(TerrainData terrainData)

@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: Simple Water Material
   m_Shader: {fileID: -6465566751694194690, guid: 0cd5f710497665941bc3eac45a1c2cb4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -17,6 +19,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -114,6 +117,7 @@ Material:
     - Vector1_bfba1b727b514d7eb1923ea9aaa2192d: 0.865
     - Vector1_c0fde5d8bd6f4e2d97e00c9f12f94d16: 0.01
     - Vector1_cb04052392c44a3eb626a5a56477b937: 3.63
+    - Vector1_cfc80cfb20b745f9ba886bdea03003af: 0.5
     - Vector1_d9956af39dff42aaa345604dd3437134: 0.587
     - Vector1_e8bbd7323db04ad493aa208d0cb3e88c: 0.81
     - _AlphaClip: 0
@@ -133,6 +137,7 @@ Material:
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
@@ -166,4 +171,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 5
+  version: 7
